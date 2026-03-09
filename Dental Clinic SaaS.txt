@@ -1,0 +1,335 @@
+Dental Clinic SaaS — Development Progress Documentation
+Project Overview
+
+A multi-tenant SaaS backend system designed to allow multiple dental clinics to manage their clinic operations through a single platform.
+
+Each clinic has isolated data while sharing the same software infrastructure.
+
+Core capabilities include:
+
+clinic authentication
+
+patient management
+
+secure API access
+
+multi-tenant database architecture
+
+System Architecture
+
+Current backend architecture:
+
+Frontend (future dashboard)
+        ↓
+Node.js API Server
+        ↓
+PostgreSQL Database
+
+Technology stack:
+
+Node.js
+
+Express.js
+
+PostgreSQL
+
+bcrypt
+
+JSON Web Token
+
+Backend Folder Structure
+
+Current project structure:
+
+backend
+│
+├── server.js
+│
+├── config
+│     └── db.js
+│
+├── routes
+│     ├── authRoutes.js
+│     └── patientRoutes.js
+│
+├── middleware
+│     └── authMiddleware.js
+│
+└── node_modules
+Database Design
+
+Database name:
+
+dental_saas
+Clinics Table
+
+Stores clinic accounts.
+
+clinics
+-------
+id
+clinic_name
+email
+password (bcrypt hashed)
+created_at
+
+Example stored password:
+
+$2b$10$skdfhskdfhsdkfhskdfh
+Patients Table
+
+Stores patient records belonging to a clinic.
+
+patients
+--------
+id
+clinic_id
+name
+phone
+age
+address
+created_at
+
+Relationship:
+
+clinic
+   ↓
+patients
+
+Each patient belongs to a specific clinic.
+
+Authentication System
+Signup API
+
+Endpoint:
+
+POST /api/auth/signup
+
+Function:
+
+registers new clinic
+
+hashes password using bcrypt
+
+stores clinic data in database
+
+Process:
+
+password
+ ↓
+bcrypt.hash()
+ ↓
+store hashed password
+Login API
+
+Endpoint:
+
+POST /api/auth/login
+
+Function:
+
+verifies password using bcrypt
+
+generates JWT token
+
+Authentication flow:
+
+user login
+ ↓
+bcrypt.compare()
+ ↓
+password verified
+ ↓
+JWT token generated
+
+Example response:
+
+{
+ "message": "Login successful",
+ "token": "JWT_TOKEN"
+}
+JWT Authentication
+
+JWT payload structure:
+
+{
+ clinic_id: 1
+}
+
+Token expiration:
+
+1 hour
+
+Token usage in requests:
+
+Authorization: Bearer JWT_TOKEN
+Protected Middleware
+
+File:
+
+middleware/authMiddleware.js
+
+Purpose:
+
+verifies JWT tokens
+
+extracts clinic_id
+
+protects private routes
+
+Flow:
+
+Request
+ ↓
+Authorization header
+ ↓
+JWT verification
+ ↓
+clinic_id attached to request
+Patient Management API
+Create Patient
+
+Endpoint:
+
+POST /api/patients
+
+Protected route.
+
+JWT provides:
+
+clinic_id
+
+Example body:
+
+{
+ "name": "Arun Kumar",
+ "phone": "9876543210",
+ "age": 35,
+ "address": "Bangalore"
+}
+
+Result:
+
+Patient stored with clinic_id.
+
+Get Patients
+
+Endpoint:
+
+GET /api/patients
+
+Query logic:
+
+SELECT * FROM patients
+WHERE clinic_id = logged_in_clinic
+
+Example response:
+
+[
+ {
+  id:1,
+  clinic_id:1,
+  name:"Arun Kumar",
+  phone:"9876543210"
+ }
+]
+
+This ensures:
+
+Clinic A → sees only its patients
+Clinic B → sees only its patients
+Multi-Tenant SaaS Logic
+
+The system isolates clinic data using:
+
+clinic_id
+
+Data separation model:
+
+Clinic A
+   └── Patients A
+
+Clinic B
+   └── Patients B
+
+This allows one platform to support many clinics simultaneously.
+
+Features Completed
+
+Current implemented modules:
+
+Backend API server
+Database connection
+Clinic signup
+Password hashing
+Clinic login
+JWT authentication
+Protected APIs
+Patient creation
+Patient listing
+Multi-tenant data isolation
+Current System Status
+
+Working endpoints:
+
+POST /api/auth/signup
+POST /api/auth/login
+POST /api/patients
+GET /api/patients
+
+System successfully supports:
+
+secure authentication
+
+token-based authorization
+
+multi-clinic data management
+
+Next Development Modules
+
+Upcoming backend modules:
+
+Appointment Management
+POST /appointments
+GET /appointments
+UPDATE appointment
+DELETE appointment
+Treatment Records
+POST /treatments
+GET /treatments
+Billing System
+POST /invoices
+GET /invoices
+Long-Term System Vision
+
+The platform will evolve into a complete dental clinic operating system.
+
+Future modules:
+
+appointment scheduling
+
+treatment tracking
+
+billing & invoices
+
+staff management
+
+analytics dashboard
+
+SMS reminders
+
+Engineering Outcome
+
+This project demonstrates:
+
+REST API development
+
+secure authentication
+
+database design
+
+SaaS multi-tenant architecture
+
+backend system design
+
+This is real production-style backend engineering, not a basic academic project.
