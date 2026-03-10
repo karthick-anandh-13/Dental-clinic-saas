@@ -1,52 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/db");
 const authMiddleware = require("../middleware/authMiddleware");
+const patientController = require("../controllers/patientController");
 
 /* =========================
    CREATE PATIENT
 ========================= */
 
-router.post("/", authMiddleware, async (req, res) => {
-  try {
-
-    const clinic_id = req.clinic.clinic_id;
-
-    const { name, phone, age, address } = req.body;
-
-    const newPatient = await pool.query(
-      "INSERT INTO patients (clinic_id,name,phone,age,address) VALUES ($1,$2,$3,$4,$5) RETURNING *",
-      [clinic_id, name, phone, age, address]
-    );
-
-    res.json(newPatient.rows[0]);
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-});
+router.post("/", authMiddleware, patientController.createPatient);
 
 /* =========================
    GET ALL PATIENTS
 ========================= */
 
-router.get("/", authMiddleware, async (req, res) => {
-  try {
+router.get("/", authMiddleware, patientController.getPatients);
 
-    const clinic_id = req.clinic.clinic_id;
+/* =========================
+   UPDATE PATIENT
+========================= */
 
-    const patients = await pool.query(
-      "SELECT * FROM patients WHERE clinic_id = $1",
-      [clinic_id]
-    );
+router.put("/:id", authMiddleware, patientController.updatePatient);
 
-    res.json(patients.rows);
+/* =========================
+   DELETE PATIENT
+========================= */
 
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-});
+router.delete("/:id", authMiddleware, patientController.deletePatient);
 
 module.exports = router;

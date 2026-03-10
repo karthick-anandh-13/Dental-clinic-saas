@@ -60,7 +60,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { clinic_id: clinic.rows[0].id },
       "supersecretkey",
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
     res.json({
