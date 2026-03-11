@@ -1,0 +1,171 @@
+Day 2 Development Documentation — Dental SaaS Backend
+Overview
+
+Today the backend architecture was upgraded from route-based logic to a controller-based architecture, making the system more modular, scalable, and aligned with industry practices.
+
+The backend now follows a layered structure:
+
+Routes → Controllers → Database
+
+This separation improves maintainability and prepares the project for larger features and future scaling.
+
+Project Architecture
+
+Current backend structure:
+
+backend
+│
+├── config
+│     └── db.js
+│
+├── controllers
+│     ├── authController.js
+│     ├── patientController.js
+│     ├── appointmentController.js
+│     ├── treatmentController.js
+│     └── invoiceController.js
+│
+├── routes
+│     ├── authRoutes.js
+│     ├── patientRoutes.js
+│     ├── appointmentRoutes.js
+│     ├── treatmentRoutes.js
+│     ├── invoiceRoutes.js
+│     └── dashboardRoutes.js
+│
+├── middleware
+│     └── authMiddleware.js
+│
+└── server.js
+Refactoring Completed Today
+Controllers Implemented
+
+The following modules were migrated to controllers:
+
+Authentication Controller
+
+Handles:
+
+signup
+
+login
+
+password hashing
+
+JWT generation
+
+File:
+
+controllers/authController.js
+Patient Controller
+
+Handles:
+
+Create patient
+Get patients
+Update patient
+Delete patient
+
+File:
+
+controllers/patientController.js
+Appointment Controller
+
+Handles:
+
+Create appointment
+Get appointments
+
+File:
+
+controllers/appointmentController.js
+Treatment Controller
+
+Handles:
+
+Create treatment
+Get treatments
+
+File:
+
+controllers/treatmentController.js
+Invoice Controller
+
+Handles:
+
+Create invoice
+Get invoices
+
+File:
+
+controllers/invoiceController.js
+Multi-Tenant SaaS Logic
+
+All resources are scoped using:
+
+clinic_id
+
+JWT payload structure:
+
+{
+ "clinic_id": 1
+}
+
+Middleware extracts the identity:
+
+req.clinic.clinic_id
+
+Every query filters data using:
+
+WHERE clinic_id = req.clinic.clinic_id
+
+This guarantees:
+
+Clinic A cannot access Clinic B data
+Backend Workflow
+
+The backend now supports the complete clinic workflow:
+
+Signup
+   ↓
+Login
+   ↓
+Patients
+   ↓
+Appointments
+   ↓
+Treatments
+   ↓
+Invoices
+   ↓
+Dashboard analytics
+APIs Implemented
+Authentication
+POST /api/auth/signup
+POST /api/auth/login
+Patients
+POST /api/patients
+GET /api/patients
+PUT /api/patients/:id
+DELETE /api/patients/:id
+Appointments
+POST /api/appointments
+GET /api/appointments
+Treatments
+POST /api/treatments
+GET /api/treatments
+Invoices
+POST /api/invoices
+GET /api/invoices
+Dashboard
+GET /api/dashboard
+
+Returns analytics such as:
+
+total patients
+
+total appointments
+
+total treatments
+
+total revenue

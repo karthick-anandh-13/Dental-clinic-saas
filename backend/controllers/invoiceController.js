@@ -30,8 +30,7 @@ exports.createInvoice = async (req, res) => {
 
   } catch (err) {
 
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err)
 
   }
 
@@ -62,10 +61,40 @@ exports.getInvoices = async (req, res) => {
     res.json(invoices.rows);
 
   } catch (err) {
+     next(err)
+  }
 
-    console.error(err.message);
-    res.status(500).send("Server error");
+};
 
+const { generateInvoicePDF } = require("../services/invoiceService");
+
+exports.downloadInvoice = async (req, res, next) => {
+
+  try {
+
+    const invoice_id = req.params.id;
+
+    const invoice = await pool.query(
+      `SELECT invoices.*, patients.name AS patient_name, treatments.treatment_type
+       FROM invoices
+       JOIN patients ON invoices.patient_id = patients.id
+       JOIN treatments ON invoices.treatment_id = treatments.id
+       WHERE invoices.id = $1`,
+      [invoice_id]
+    );
+
+    if (invoice.rows.length === 0) {
+      return res.status(404).json({
+        message: "Invoice not found"
+      });
+    }
+
+    const filePath = generateInvoicePDF(invoice.rows[0]);
+
+    res.download(filePath);
+
+  } catch (err) {
+    next(err);
   }
 
 };

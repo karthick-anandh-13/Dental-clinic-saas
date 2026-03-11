@@ -31,8 +31,7 @@ exports.createTreatment = async (req, res) => {
 
   } catch (err) {
 
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err)
 
   }
 
@@ -63,10 +62,7 @@ exports.getTreatments = async (req, res) => {
     res.json(treatments.rows);
 
   } catch (err) {
-
-    console.error(err.message);
-    res.status(500).send("Server error");
-
+      next(err)
   }
 
 };

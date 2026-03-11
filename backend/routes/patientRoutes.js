@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const patientController = require("../controllers/patientController");
-
+const validate = require("../middleware/validateMiddleware");
+const patientSchema = require("../validators/patientValidator");
 /* =========================
    CREATE PATIENT
 ========================= */
 
-router.post("/", authMiddleware, patientController.createPatient);
+router.post("/", authMiddleware, validate(patientSchema), patientController.createPatient);
 
 /* =========================
    GET ALL PATIENTS

@@ -9,6 +9,7 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const treatmentRoutes = require("./routes/treatmentRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
 
 app.use(cors());
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/treatments", treatmentRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
     res.send("Dental SaaS API Running");

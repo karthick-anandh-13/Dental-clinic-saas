@@ -333,3 +333,23 @@ SaaS multi-tenant architecture
 backend system design
 
 This is real production-style backend engineering, not a basic academic project.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------
+Next Step (Very Important)
+
+The next major improvement will make your API enterprise level:
+
+Request Validation Layer
+
+We will use:
+
+Zod
+
+This prevents invalid data like:
+
+age = "abc"
+phone = null
+appointment_date = wrong format
+
+Before the request even reaches the database.

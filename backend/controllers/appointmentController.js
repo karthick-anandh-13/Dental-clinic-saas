@@ -27,8 +27,7 @@ exports.createAppointment = async (req, res) => {
 
   } catch (err) {
 
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err)
 
   }
 
@@ -57,10 +56,7 @@ exports.getAppointments = async (req, res) => {
     res.json(appointments.rows);
 
   } catch (err) {
-
-    console.error(err.message);
-    res.status(500).send("Server error");
-
+     next(err)
   }
 
 };

@@ -13,5 +13,10 @@ router.post("/", authMiddleware, invoiceController.createInvoice);
 
 router.get("/", authMiddleware, invoiceController.getInvoices);
 
+router.get(
+  "/:id/download",
+  authMiddleware,
+  invoiceController.downloadInvoice
+);
 
 module.exports = router;

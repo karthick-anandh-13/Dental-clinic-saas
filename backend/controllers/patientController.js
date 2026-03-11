@@ -18,32 +18,45 @@ exports.createPatient = async (req, res) => {
     res.json(newPatient.rows[0]);
 
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err)
   }
 };
 
 
 /* GET PATIENTS */
+exports.getPatients = async (req, res, next) => {
 
-exports.getPatients = async (req, res) => {
   try {
 
     const clinic_id = req.clinic.clinic_id;
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+
+    const offset = (page - 1) * limit;
+
     const patients = await pool.query(
-      "SELECT * FROM patients WHERE clinic_id=$1",
-      [clinic_id]
+      `SELECT *
+       FROM patients
+       WHERE clinic_id = $1
+       AND name ILIKE $2
+       ORDER BY created_at DESC
+       LIMIT $3 OFFSET $4`,
+      [clinic_id, `%${search}%`, limit, offset]
     );
 
-    res.json(patients.rows);
+    res.json({
+      page,
+      limit,
+      results: patients.rows
+    });
 
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err);
   }
-};
 
+};
 
 /* UPDATE PATIENT */
 
@@ -66,8 +79,7 @@ exports.updatePatient = async (req, res) => {
     res.json(updatedPatient.rows[0]);
 
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    next(err)
   }
 };
 
@@ -88,7 +100,6 @@ exports.deletePatient = async (req, res) => {
     res.json({ message: "Patient deleted successfully" });
 
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+      next(err)
   }
 };
