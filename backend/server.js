@@ -1,49 +1,96 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
+const helmet = require("helmet");
+const morgan = require("morgan");
+
 const pool = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
-const app = express();
-const authMiddleware = require("./middleware/authMiddleware");
 const patientRoutes = require("./routes/patientRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const treatmentRoutes = require("./routes/treatmentRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const userRoutes = require("./routes/userRoutes");
+const medicalHistoryRoutes = require("./routes/medicalHistoryRoutes");
+const fileRoutes = require("./routes/fileRoutes");
+
+const limiter = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorMiddleware");
 
-app.use(cors());
-app.use(express.json());
-app.use("/api/auth", authRoutes);
-app.use("/api/patients", patientRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/treatments", treatmentRoutes);
-app.use("/api/invoices", invoiceRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use(errorHandler);
+const startReminderService = require("./services/reminderService");
+
+dotenv.config();
+
+const app = express();
+
+/* ========================
+   GLOBAL MIDDLEWARE
+======================== */
+
+app.use(morgan("dev"));          // API request logging
+app.use(helmet());               // Security headers
+app.use(cors());                 // Cross origin access
+app.use(express.json());         // JSON body parser
+app.use(limiter);                // Rate limiting
+
+/* ========================
+   STATIC FILES
+======================== */
+
+app.use("/uploads", express.static("uploads"));
+
+/* ========================
+   API ROUTES (VERSIONED)
+======================== */
+
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/patients", patientRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/v1/treatments", treatmentRoutes);
+app.use("/api/v1/invoices", invoiceRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/medical-history", medicalHistoryRoutes);
+app.use("/api/v1/files", fileRoutes);
+
+/* ========================
+   ROOT ROUTE
+======================== */
 
 app.get("/", (req, res) => {
-    res.send("Dental SaaS API Running");
+  res.send("Dental SaaS API Running");
 });
+
+/* ========================
+   DATABASE TEST
+======================== */
 
 app.get("/test-db", async (req, res) => {
-    try {
-        const result = await pool.query("SELECT NOW()");
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Database connection error");
-    }
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Database connection error");
+  }
 });
 
-app.get("/api/dashboard", authMiddleware, (req, res) => {
-  res.json({
-    message: "Welcome to Dental SaaS Dashboard",
-    clinic_id: req.clinic.clinic_id
-  });
-});
+/* ========================
+   GLOBAL ERROR HANDLER
+======================== */
 
-const PORT = 5000;
+app.use(errorHandler);
+
+/* ========================
+   SERVER START
+======================== */
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+
+  startReminderService();
 });

@@ -353,3 +353,30 @@ phone = null
 appointment_date = wrong format
 
 Before the request even reaches the database.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+After Fixing This
+
+We will continue Day 3 Step 2, which is a very important SaaS feature:
+
+Advanced dashboard analytics
+(monthly revenue, appointments today, top treatments)
+
+This will make your backend look like a real business product, not just a CRUD API
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Advanced Dashboard Analytics API
+
+Example metrics your SaaS will expose:
+
+Total Patients
+Appointments Today
+Monthly Revenue
+Top Treatments
+
+This is the type of data that powers the admin dashboard of real SaaS products.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+{"message":"Cannot read properties of undefined (reading 'id')","stack":"TypeError: Cannot read properties of undefined (reading 'id')\n    at exports.generateInvoicePDF (E:\\dental-saas\\backend\\services\\invoiceService.js:12:28)\n    at exports.downloadInvoice (E:\\dental-saas\\backend\\controllers\\invoiceController.js:86:22)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"}
+
+TypeError: Cannot read properties of undefined (reading 'id')
+    at exports.generateInvoicePDF (E:\dental-saas\backend\services\invoiceService.js:12:28)
+    at exports.downloadInvoice (E:\dental-saas\backend\controllers\invoiceController.js:86:22)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

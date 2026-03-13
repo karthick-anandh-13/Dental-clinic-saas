@@ -1,0 +1,11 @@
+Next Step for Day 4
+
+Now that roles are designed, the next step is creating the Role Permission Middleware so APIs enforce rules like:
+
+owner → create users
+dentist → create treatments
+receptionist → manage appointments
+nurse → assist treatments
+
+This is the core of Role-Based Access Control (RBAC).
+If you want, I can guide you step-by-step to implement the RBAC middleware next.
