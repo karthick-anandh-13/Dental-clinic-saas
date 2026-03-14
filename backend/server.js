@@ -18,9 +18,10 @@ const fileRoutes = require("./routes/fileRoutes");
 
 const limiter = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorMiddleware");
-
+const auditRoutes = require("./routes/auditRoutes");
 const startReminderService = require("./services/reminderService");
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
 dotenv.config();
 
 const app = express();
@@ -54,7 +55,8 @@ app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/medical-history", medicalHistoryRoutes);
 app.use("/api/v1/files", fileRoutes);
-
+app.use("/api/v1/audit", auditRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 /* ========================
    ROOT ROUTE
 ======================== */

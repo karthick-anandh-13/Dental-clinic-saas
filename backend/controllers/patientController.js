@@ -1,8 +1,12 @@
 const pool = require("../config/db");
+const auditService = require("../services/auditService");
+const apiResponse = require("../utils/apiResponse");
 
-/* CREATE PATIENT */
+/* =========================
+   CREATE PATIENT
+========================= */
 
-exports.createPatient = async (req, res) => {
+exports.createPatient = async (req, res, next) => {
   try {
 
     const clinic_id = req.clinic.clinic_id;
@@ -15,17 +19,33 @@ exports.createPatient = async (req, res) => {
       [clinic_id, name, phone, age, address]
     );
 
-    res.json(newPatient.rows[0]);
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "CREATE",
+      "PATIENT",
+      newPatient.rows[0].id
+    );
+
+    return apiResponse.success(
+      res,
+      newPatient.rows[0],
+      "Patient created successfully"
+    );
 
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
 
-/* GET PATIENTS */
-exports.getPatients = async (req, res, next) => {
+/* =========================
+   GET PATIENTS
+========================= */
 
+exports.getPatients = async (req, res, next) => {
   try {
 
     const clinic_id = req.clinic.clinic_id;
@@ -46,21 +66,27 @@ exports.getPatients = async (req, res, next) => {
       [clinic_id, `%${search}%`, limit, offset]
     );
 
-    res.json({
-      page,
-      limit,
-      results: patients.rows
-    });
+    return apiResponse.success(
+      res,
+      {
+        page,
+        limit,
+        results: patients.rows
+      },
+      "Patients fetched successfully"
+    );
 
   } catch (err) {
     next(err);
   }
-
 };
 
-/* UPDATE PATIENT */
 
-exports.updatePatient = async (req, res) => {
+/* =========================
+   UPDATE PATIENT
+========================= */
+
+exports.updatePatient = async (req, res, next) => {
   try {
 
     const clinic_id = req.clinic.clinic_id;
@@ -76,30 +102,68 @@ exports.updatePatient = async (req, res) => {
       [name, phone, age, address, patient_id, clinic_id]
     );
 
-    res.json(updatedPatient.rows[0]);
+    if (updatedPatient.rows.length === 0) {
+      return apiResponse.error(res, "Patient not found", 404);
+    }
+
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "UPDATE",
+      "PATIENT",
+      patient_id
+    );
+
+    return apiResponse.success(
+      res,
+      updatedPatient.rows[0],
+      "Patient updated successfully"
+    );
 
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
 
-/* DELETE PATIENT */
+/* =========================
+   DELETE PATIENT
+========================= */
 
-exports.deletePatient = async (req, res) => {
+exports.deletePatient = async (req, res, next) => {
   try {
 
     const clinic_id = req.clinic.clinic_id;
     const patient_id = req.params.id;
 
-    await pool.query(
-      "DELETE FROM patients WHERE id=$1 AND clinic_id=$2",
+    const deleted = await pool.query(
+      "DELETE FROM patients WHERE id=$1 AND clinic_id=$2 RETURNING id",
       [patient_id, clinic_id]
     );
 
-    res.json({ message: "Patient deleted successfully" });
+    if (deleted.rows.length === 0) {
+      return apiResponse.error(res, "Patient not found", 404);
+    }
+
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "DELETE",
+      "PATIENT",
+      patient_id
+    );
+
+    return apiResponse.success(
+      res,
+      null,
+      "Patient deleted successfully"
+    );
 
   } catch (err) {
-      next(err)
+    next(err);
   }
 };

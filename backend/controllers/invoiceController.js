@@ -1,11 +1,14 @@
 const pool = require("../config/db");
+const apiResponse = require("../utils/apiResponse");
+const auditService = require("../services/auditService");
+const { generateInvoicePDF } = require("../services/invoiceService");
 
 
 /* =========================
    CREATE INVOICE
 ========================= */
 
-exports.createInvoice = async (req, res) => {
+exports.createInvoice = async (req, res, next) => {
 
   try {
 
@@ -26,12 +29,24 @@ exports.createInvoice = async (req, res) => {
       [clinic_id, patient_id, treatment_id, amount, payment_method]
     );
 
-    res.json(newInvoice.rows[0]);
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "CREATE",
+      "INVOICE",
+      newInvoice.rows[0].id
+    );
+
+    return apiResponse.success(
+      res,
+      newInvoice.rows[0],
+      "Invoice created successfully"
+    );
 
   } catch (err) {
-
-    next(err)
-
+    next(err);
   }
 
 };
@@ -41,7 +56,7 @@ exports.createInvoice = async (req, res) => {
    GET INVOICES
 ========================= */
 
-exports.getInvoices = async (req, res) => {
+exports.getInvoices = async (req, res, next) => {
 
   try {
 
@@ -58,15 +73,22 @@ exports.getInvoices = async (req, res) => {
       [clinic_id]
     );
 
-    res.json(invoices.rows);
+    return apiResponse.success(
+      res,
+      invoices.rows,
+      "Invoices fetched successfully"
+    );
 
   } catch (err) {
-     next(err)
+    next(err);
   }
 
 };
 
-const { generateInvoicePDF } = require("../services/invoiceService");
+
+/* =========================
+   DOWNLOAD INVOICE PDF
+========================= */
 
 exports.downloadInvoice = async (req, res, next) => {
 
@@ -84,14 +106,12 @@ exports.downloadInvoice = async (req, res, next) => {
     );
 
     if (invoice.rows.length === 0) {
-      return res.status(404).json({
-        message: "Invoice not found"
-      });
+      return apiResponse.error(res, "Invoice not found", 404);
     }
 
     const filePath = generateInvoicePDF(invoice.rows[0]);
 
-    res.download(filePath);
+    return res.download(filePath);
 
   } catch (err) {
     next(err);

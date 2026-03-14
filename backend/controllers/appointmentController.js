@@ -1,6 +1,10 @@
 const pool = require("../config/db");
+const apiResponse = require("../utils/apiResponse");
+const auditService = require("../services/auditService");
 
-/* CREATE APPOINTMENT */
+/* =========================
+   CREATE APPOINTMENT
+========================= */
 
 exports.createAppointment = async (req, res, next) => {
 
@@ -15,7 +19,7 @@ exports.createAppointment = async (req, res, next) => {
       end_time
     } = req.body;
 
-    /* CHECK FOR TIME CONFLICT */
+    /* CHECK TIME CONFLICT */
 
     const conflict = await pool.query(
       `SELECT *
@@ -33,9 +37,11 @@ exports.createAppointment = async (req, res, next) => {
     );
 
     if (conflict.rows.length > 0) {
-      return res.status(400).json({
-        message: "Dentist already has an appointment at this time"
-      });
+      return apiResponse.error(
+        res,
+        "Dentist already has an appointment at this time",
+        400
+      );
     }
 
     /* CREATE APPOINTMENT */
@@ -54,17 +60,32 @@ exports.createAppointment = async (req, res, next) => {
       ]
     );
 
-    res.json(newAppointment.rows[0]);
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "CREATE",
+      "APPOINTMENT",
+      newAppointment.rows[0].id
+    );
+
+    return apiResponse.success(
+      res,
+      newAppointment.rows[0],
+      "Appointment created successfully"
+    );
 
   } catch (err) {
-
     next(err);
-
   }
 
 };
 
-/* GET APPOINTMENTS */
+
+/* =========================
+   GET APPOINTMENTS
+========================= */
 
 exports.getAppointments = async (req, res, next) => {
 
@@ -81,16 +102,18 @@ exports.getAppointments = async (req, res, next) => {
        JOIN patients ON appointments.patient_id = patients.id
        JOIN users ON appointments.dentist_id = users.id
        WHERE appointments.clinic_id = $1
-       ORDER BY appointment_date`,
+       ORDER BY start_time`,
       [clinic_id]
     );
 
-    res.json(appointments.rows);
+    return apiResponse.success(
+      res,
+      appointments.rows,
+      "Appointments fetched successfully"
+    );
 
   } catch (err) {
-
     next(err);
-
   }
 
 };

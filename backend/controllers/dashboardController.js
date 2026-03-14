@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const apiResponse = require("../utils/apiResponse");
 
 exports.getDashboardStats = async (req, res, next) => {
 
@@ -6,24 +7,30 @@ exports.getDashboardStats = async (req, res, next) => {
 
     const clinic_id = req.clinic.clinic_id;
 
-    /* TOTAL PATIENTS */
+    /* =========================
+       TOTAL PATIENTS
+    ========================= */
 
     const totalPatients = await pool.query(
       "SELECT COUNT(*) FROM patients WHERE clinic_id = $1",
       [clinic_id]
     );
 
-    /* APPOINTMENTS TODAY */
+    /* =========================
+       APPOINTMENTS TODAY
+    ========================= */
 
     const appointmentsToday = await pool.query(
       `SELECT COUNT(*)
        FROM appointments
        WHERE clinic_id = $1
-       AND appointment_date = CURRENT_DATE`,
+       AND DATE(start_time) = CURRENT_DATE`,
       [clinic_id]
     );
 
-    /* MONTHLY REVENUE */
+    /* =========================
+       MONTHLY REVENUE
+    ========================= */
 
     const monthlyRevenue = await pool.query(
       `SELECT
@@ -36,7 +43,9 @@ exports.getDashboardStats = async (req, res, next) => {
       [clinic_id]
     );
 
-    /* TOP TREATMENTS */
+    /* =========================
+       TOP TREATMENTS
+    ========================= */
 
     const topTreatments = await pool.query(
       `SELECT treatment_type, COUNT(*) as count
@@ -48,12 +57,20 @@ exports.getDashboardStats = async (req, res, next) => {
       [clinic_id]
     );
 
-    res.json({
-      total_patients: totalPatients.rows[0].count,
-      appointments_today: appointmentsToday.rows[0].count,
-      monthly_revenue: monthlyRevenue.rows,
-      top_treatments: topTreatments.rows
-    });
+    /* =========================
+       RESPONSE
+    ========================= */
+
+    return apiResponse.success(
+      res,
+      {
+        total_patients: Number(totalPatients.rows[0].count),
+        appointments_today: Number(appointmentsToday.rows[0].count),
+        monthly_revenue: monthlyRevenue.rows,
+        top_treatments: topTreatments.rows
+      },
+      "Dashboard statistics fetched successfully"
+    );
 
   } catch (err) {
 

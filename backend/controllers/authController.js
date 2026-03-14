@@ -1,6 +1,7 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const apiResponse = require("../utils/apiResponse");
 
 
 /* =========================
@@ -13,23 +14,24 @@ exports.signup = async (req, res, next) => {
 
     const { clinic_name, email, password } = req.body;
 
-    // check if clinic already exists
+    /* CHECK IF CLINIC EXISTS */
+
     const clinicExists = await pool.query(
-      "SELECT * FROM clinics WHERE email = $1",
+      "SELECT id FROM clinics WHERE email = $1",
       [email]
     );
 
     if (clinicExists.rows.length > 0) {
-      return res.status(400).json({
-        message: "Clinic already exists"
-      });
+      return apiResponse.error(res, "Clinic already exists", 400);
     }
 
-    // hash password
+    /* HASH PASSWORD */
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // create clinic
+    /* CREATE CLINIC */
+
     const newClinic = await pool.query(
       `INSERT INTO clinics (clinic_name, email, password)
        VALUES ($1,$2,$3)
@@ -37,10 +39,11 @@ exports.signup = async (req, res, next) => {
       [clinic_name, email, hashedPassword]
     );
 
-    res.json({
-      message: "Clinic registered successfully",
-      clinic: newClinic.rows[0]
-    });
+    return apiResponse.success(
+      res,
+      newClinic.rows[0],
+      "Clinic registered successfully"
+    );
 
   } catch (err) {
     next(err);
@@ -66,9 +69,7 @@ exports.login = async (req, res, next) => {
     );
 
     if (clinic.rows.length === 0) {
-      return res.status(400).json({
-        message: "Clinic not found"
-      });
+      return apiResponse.error(res, "Clinic not found", 404);
     }
 
     const validPassword = await bcrypt.compare(
@@ -77,10 +78,10 @@ exports.login = async (req, res, next) => {
     );
 
     if (!validPassword) {
-      return res.status(401).json({
-        message: "Invalid password"
-      });
+      return apiResponse.error(res, "Invalid password", 401);
     }
+
+    /* CREATE JWT TOKEN */
 
     const token = jwt.sign(
       {
@@ -91,11 +92,14 @@ exports.login = async (req, res, next) => {
       { expiresIn: "7d" }
     );
 
-    res.json({
-      message: "Login successful",
-      clinic: clinic.rows[0].clinic_name,
-      token: token
-    });
+    return apiResponse.success(
+      res,
+      {
+        clinic: clinic.rows[0].clinic_name,
+        token
+      },
+      "Login successful"
+    );
 
   } catch (err) {
     next(err);

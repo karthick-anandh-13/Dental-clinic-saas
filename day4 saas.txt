@@ -9,3 +9,398 @@ nurse → assist treatments
 
 This is the core of Role-Based Access Control (RBAC).
 If you want, I can guide you step-by-step to implement the RBAC middleware next.
+
+Objectives of Day 4
+
+The goals of today's development were:
+
+Introduce API versioning
+
+Improve security and protection against attacks
+
+Implement rate limiting
+
+Add API request logging
+
+Standardize middleware architecture
+
+Enable static access to uploaded files
+
+These changes make the system more robust and ready for deployment.
+
+1. API Versioning Implementation
+Problem
+
+Previously, the API endpoints were structured as:
+
+/api/patients
+/api/appointments
+/api/invoices
+
+
+If the API structure changes later, existing applications consuming the API could break.
+
+Solution
+
+API versioning was introduced.
+
+All routes were updated to use:
+
+/api/v1/
+
+
+Example endpoints now include:
+
+/api/v1/auth
+/api/v1/patients
+/api/v1/appointments
+/api/v1/treatments
+/api/v1/invoices
+/api/v1/dashboard
+/api/v1/users
+/api/v1/medical-history
+/api/v1/files
+
+Benefits
+
+API versioning allows future updates without breaking older clients.
+
+Example:
+
+/api/v1/patients
+/api/v2/patients
+
+
+Both versions can coexist.
+
+This is a standard practice used by large platforms such as:
+
+Stripe
+
+GitHub
+
+2. Security Hardening with Helmet
+Library Used
+
+Helmet
+
+Purpose
+
+Helmet automatically sets secure HTTP headers to protect against common web vulnerabilities.
+
+Examples of protections include:
+
+Cross-Site Scripting (XSS)
+
+Clickjacking
+
+MIME sniffing
+
+Cross-origin resource policies
+
+Implementation
+const helmet = require("helmet");
+app.use(helmet());
+
+
+This adds multiple security headers automatically.
+
+3. API Rate Limiting
+Problem
+
+Public APIs can be abused by bots or attackers sending thousands of requests.
+
+Solution
+
+Rate limiting was implemented using:
+
+express-rate-limit
+
+Implementation
+
+A middleware was created:
+
+backend/middleware/rateLimiter.js
+
+
+Example configuration:
+
+windowMs: 15 minutes
+max: 100 requests
+
+
+Meaning:
+
+Each IP address can send 100 requests every 15 minutes
+
+If exceeded:
+
+{
+ "message": "Too many requests, please try again later"
+}
+
+Benefits
+
+This prevents:
+
+brute force attacks
+
+API abuse
+
+denial-of-service attempts
+
+4. API Request Logging
+Library Used
+
+Morgan
+
+Purpose
+
+Logs every API request received by the server.
+
+Implementation
+const morgan = require("morgan");
+app.use(morgan("dev"));
+
+Example Log Output
+POST /api/v1/patients 200 35ms
+GET /api/v1/appointments 200 12ms
+
+Benefits
+
+Logging helps with:
+
+debugging issues
+
+monitoring API traffic
+
+identifying abnormal usage
+
+5. Static File Serving for Uploads
+
+Previously uploaded files (X-rays, documents) were stored but not easily accessible.
+
+Static file serving was enabled:
+
+app.use("/uploads", express.static("uploads"));
+
+Result
+
+Uploaded files can now be accessed through URLs.
+
+Example:
+
+http://localhost:5000/uploads/xray_image.png
+
+Benefits
+
+Allows:
+
+viewing X-ray images in browser
+
+displaying images in frontend dashboards
+
+sharing medical documents securely
+
+6. Middleware Architecture Improvements
+
+The middleware order in server.js was reorganized to follow production best practices.
+
+Correct order now:
+
+Request
+  ↓
+Morgan Logger
+  ↓
+Helmet Security
+  ↓
+CORS
+  ↓
+JSON Parser
+  ↓
+Rate Limiter
+  ↓
+Routes
+  ↓
+Error Handler
+
+
+This ensures:
+
+requests are logged first
+
+security protections are applied early
+
+API abuse is controlled
+
+errors are handled consistently
+
+7. Improved Project Structure
+
+The backend now follows a modular layered architecture.
+
+backend
+│
+├── config
+│    db.js
+│
+├── controllers
+│
+├── routes
+│
+├── middleware
+│    authMiddleware
+│    rateLimiter
+│    errorMiddleware
+│
+├── services
+│    reminderService
+│
+├── uploads
+│
+└── server.js
+
+Architecture Flow
+Client Request
+     ↓
+Routes
+     ↓
+Middleware
+     ↓
+Controllers
+     ↓
+Services
+     ↓
+Database
+
+
+This separation improves:
+
+maintainability
+
+scalability
+
+testability
+
+Current Backend Capabilities
+
+The backend now supports a full set of clinic management features.
+
+Core System
+
+JWT authentication
+
+Multi-clinic architecture
+
+Role-based staff access
+
+Clinical Modules
+
+Patient management
+
+Appointment scheduling
+
+Dentist assignment
+
+Conflict detection
+
+Treatment records
+
+Medical history
+
+Business Operations
+
+Invoice generation
+
+PDF billing
+
+Dashboard analytics
+
+Advanced Features
+
+Appointment reminder service
+
+File/X-ray uploads
+
+Secure file access
+
+Infrastructure
+
+API versioning
+
+Rate limiting
+
+Security headers
+
+Request logging
+
+Development Progress Timeline
+Day 1
+
+Project setup
+
+PostgreSQL integration
+
+Authentication system
+
+Day 2
+
+Controller architecture
+
+Patient, appointment, treatment APIs
+
+Invoice module
+
+Day 3
+
+Validation layer
+
+Advanced dashboard analytics
+
+PDF invoice generation
+
+File uploads
+
+Reminder service
+
+Day 4
+
+API versioning
+
+Security hardening
+
+Rate limiting
+
+API logging
+
+Static file serving
+
+Middleware architecture improvements
+
+Next Development Direction
+
+Potential next improvements include:
+
+API documentation using Swagger
+
+Deployment to cloud infrastructure
+
+Admin dashboard frontend
+
+Advanced reporting and analytics
+
+Multi-clinic subscription management
+
+Conclusion
+
+Day 4 significantly improved the technical maturity of the backend.
+
+The system now follows several best practices used in real SaaS platforms, including:
+
+versioned APIs
+
+secure middleware stack
+
+rate limiting
+
+structured logging

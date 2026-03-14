@@ -1,11 +1,13 @@
 const pool = require("../config/db");
+const apiResponse = require("../utils/apiResponse");
+const auditService = require("../services/auditService");
 
 
 /* =========================
    CREATE TREATMENT
 ========================= */
 
-exports.createTreatment = async (req, res) => {
+exports.createTreatment = async (req, res, next) => {
 
   try {
 
@@ -21,17 +23,38 @@ exports.createTreatment = async (req, res) => {
 
     const newTreatment = await pool.query(
       `INSERT INTO treatments
-      (clinic_id, patient_id, appointment_id, treatment_type, notes, cost)
-      VALUES ($1,$2,$3,$4,$5,$6)
-      RETURNING *`,
-      [clinic_id, patient_id, appointment_id, treatment_type, notes, cost]
+       (clinic_id, patient_id, appointment_id, treatment_type, notes, cost)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       RETURNING *`,
+      [
+        clinic_id,
+        patient_id,
+        appointment_id,
+        treatment_type,
+        notes,
+        cost
+      ]
     );
 
-    res.json(newTreatment.rows[0]);
+    /* AUDIT LOG */
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "CREATE",
+      "TREATMENT",
+      newTreatment.rows[0].id
+    );
+
+    return apiResponse.success(
+      res,
+      newTreatment.rows[0],
+      "Treatment created successfully"
+    );
 
   } catch (err) {
 
-    next(err)
+    next(err);
 
   }
 
@@ -42,7 +65,7 @@ exports.createTreatment = async (req, res) => {
    GET TREATMENTS
 ========================= */
 
-exports.getTreatments = async (req, res) => {
+exports.getTreatments = async (req, res, next) => {
 
   try {
 
@@ -59,10 +82,16 @@ exports.getTreatments = async (req, res) => {
       [clinic_id]
     );
 
-    res.json(treatments.rows);
+    return apiResponse.success(
+      res,
+      treatments.rows,
+      "Treatments fetched successfully"
+    );
 
   } catch (err) {
-      next(err)
+
+    next(err);
+
   }
 
 };
