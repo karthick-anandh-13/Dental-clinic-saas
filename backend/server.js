@@ -22,6 +22,7 @@ const auditRoutes = require("./routes/auditRoutes");
 const startReminderService = require("./services/reminderService");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
+const seedAdminClinic = require("./services/devSeedService");
 dotenv.config();
 
 const app = express();
@@ -91,8 +92,8 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-
+  await seedAdminClinic();
   startReminderService();
 });

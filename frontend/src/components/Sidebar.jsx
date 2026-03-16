@@ -31,6 +31,11 @@ function Sidebar() {
           Invoices
         </Link>
 
+        <Link to="/patients" className="flex items-center gap-2 hover:text-blue-600">
+          <Users size={20} />
+          Patients
+        </Link>
+
       </nav>
 
     </div>

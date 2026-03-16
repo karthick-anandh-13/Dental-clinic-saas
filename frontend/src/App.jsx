@@ -1,8 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+/* Layout */
 import DashboardLayout from "./layouts/DashboardLayout";
-import DashboardPage from "./pages/Dashboard/DashboardPage";
+
+/* Pages */
 import LoginPage from "./pages/auth/LoginPage";
+import DashboardPage from "./pages/Dashboard/DashboardPage";
+import PatientsPage from "./pages/patients/PatientsPage";
+
+/* Auth */
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -13,8 +19,10 @@ function App() {
 
       <Routes>
 
+        {/* PUBLIC ROUTE */}
         <Route path="/login" element={<LoginPage />} />
 
+        {/* PROTECTED ROUTES */}
         <Route
           path="/"
           element={
@@ -23,7 +31,16 @@ function App() {
             </ProtectedRoute>
           }
         >
+
+          {/* Default Redirect */}
+          <Route index element={<Navigate to="/dashboard" />} />
+
+          {/* Dashboard */}
           <Route path="dashboard" element={<DashboardPage />} />
+
+          {/* Patients */}
+          <Route path="patients" element={<PatientsPage />} />
+
         </Route>
 
       </Routes>
@@ -31,6 +48,7 @@ function App() {
     </BrowserRouter>
 
   );
+
 }
 
 export default App;

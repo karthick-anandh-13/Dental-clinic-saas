@@ -89,7 +89,7 @@ exports.login = async (req, res, next) => {
         user_id: clinic.rows[0].id
       },
       process.env.JWT_SECRET || "supersecretkey",
-      { expiresIn: "7d" }
+      { expiresIn: "365d" }
     );
 
     return apiResponse.success(
