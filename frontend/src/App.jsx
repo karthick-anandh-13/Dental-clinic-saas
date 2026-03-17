@@ -37,6 +37,8 @@ function App() {
 
           {/* Dashboard */}
           <Route path="dashboard" element={<DashboardPage />} />
+          
+          <Route path="patients/:id" element={<PatientProfilePage />} />        
 
           {/* Patients */}
           <Route path="patients" element={<PatientsPage />} />

@@ -88,32 +88,37 @@ exports.createAppointment = async (req, res, next) => {
 ========================= */
 
 exports.getAppointments = async (req, res, next) => {
-
   try {
 
     const clinic_id = req.clinic.clinic_id;
+    const patient_id = req.query.patient_id;
 
-    const appointments = await pool.query(
-      `SELECT
+    let query = `
+      SELECT
         appointments.*,
         patients.name AS patient_name,
         users.name AS dentist_name
-       FROM appointments
-       JOIN patients ON appointments.patient_id = patients.id
-       JOIN users ON appointments.dentist_id = users.id
-       WHERE appointments.clinic_id = $1
-       ORDER BY start_time`,
-      [clinic_id]
-    );
+      FROM appointments
+      JOIN patients ON appointments.patient_id = patients.id
+      JOIN users ON appointments.dentist_id = users.id
+      WHERE appointments.clinic_id = $1
+    `;
 
-    return apiResponse.success(
-      res,
-      appointments.rows,
-      "Appointments fetched successfully"
-    );
+    const values = [clinic_id];
+
+    // 🔥 FILTER BY PATIENT (IMPORTANT)
+    if (patient_id) {
+      query += ` AND appointments.patient_id = $2`;
+      values.push(patient_id);
+    }
+
+    query += ` ORDER BY start_time DESC`;
+
+    const appointments = await pool.query(query, values);
+
+    res.json(appointments.rows);
 
   } catch (err) {
     next(err);
   }
-
 };

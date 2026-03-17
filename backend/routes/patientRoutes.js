@@ -1,127 +1,114 @@
 const express = require("express");
 const router = express.Router();
 
+/* =========================
+   IMPORTS
+========================= */
+
 const authMiddleware = require("../middleware/authMiddleware");
 const validate = require("../middleware/validateMiddleware");
 
 const patientController = require("../controllers/patientController");
 const patientSchema = require("../validators/patientValidator");
 
-/**
- * @swagger
- * tags:
- *   name: Patients
- *   description: Patient management APIs
- */
+/* =========================
+   SAFETY CHECKS (PREVENT CRASH)
+========================= */
+
+if (typeof authMiddleware !== "function") {
+  throw new Error("authMiddleware is not a function");
+}
+
+if (typeof validate !== "function") {
+  throw new Error("validate middleware is not a function");
+}
+
+if (!patientController) {
+  throw new Error("patientController not found");
+}
+
+const {
+  createPatient,
+  getPatients,
+  getPatientById,
+  updatePatient,
+  deletePatient
+} = patientController;
+
+if (typeof createPatient !== "function") {
+  throw new Error("createPatient is not a function");
+}
+if (typeof getPatients !== "function") {
+  throw new Error("getPatients is not a function");
+}
+if (typeof getPatientById !== "function") {
+  throw new Error("getPatientById is not a function");
+}
+if (typeof updatePatient !== "function") {
+  throw new Error("updatePatient is not a function");
+}
+if (typeof deletePatient !== "function") {
+  throw new Error("deletePatient is not a function");
+}
+
+/* =========================
+   ROUTES
+========================= */
 
 /**
- * @swagger
- * /api/v1/patients:
- *   post:
- *     summary: Create a new patient
- *     tags: [Patients]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               phone:
- *                 type: string
- *               age:
- *                 type: integer
- *               address:
- *                 type: string
- *     responses:
- *       200:
- *         description: Patient created successfully
+ * CREATE PATIENT
+ * POST /api/v1/patients
  */
 router.post(
   "/",
   authMiddleware,
   validate(patientSchema),
-  patientController.createPatient
+  createPatient
 );
 
 /**
- * @swagger
- * /api/v1/patients:
- *   get:
- *     summary: Get all patients
- *     tags: [Patients]
- *     responses:
- *       200:
- *         description: List of patients
+ * GET ALL PATIENTS
+ * GET /api/v1/patients
  */
 router.get(
   "/",
   authMiddleware,
-  patientController.getPatients
+  getPatients
 );
 
 /**
- * @swagger
- * /api/v1/patients/{id}:
- *   put:
- *     summary: Update patient details
- *     tags: [Patients]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Patient ID
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               phone:
- *                 type: string
- *               age:
- *                 type: integer
- *               address:
- *                 type: string
- *     responses:
- *       200:
- *         description: Patient updated successfully
+ * GET SINGLE PATIENT
+ * GET /api/v1/patients/:id
+ */
+router.get(
+  "/:id",
+  authMiddleware,
+  getPatientById
+);
+
+/**
+ * UPDATE PATIENT
+ * PUT /api/v1/patients/:id
  */
 router.put(
   "/:id",
   authMiddleware,
   validate(patientSchema),
-  patientController.updatePatient
+  updatePatient
 );
 
 /**
- * @swagger
- * /api/v1/patients/{id}:
- *   delete:
- *     summary: Delete a patient
- *     tags: [Patients]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Patient ID
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Patient deleted successfully
+ * DELETE PATIENT
+ * DELETE /api/v1/patients/:id
  */
 router.delete(
   "/:id",
   authMiddleware,
-  patientController.deletePatient
+  deletePatient
 );
+
+/* =========================
+   EXPORT
+========================= */
 
 module.exports = router;

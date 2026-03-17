@@ -57,34 +57,38 @@ exports.createInvoice = async (req, res, next) => {
 ========================= */
 
 exports.getInvoices = async (req, res, next) => {
-
   try {
 
     const clinic_id = req.clinic.clinic_id;
+    const patient_id = req.query.patient_id;
 
-    const invoices = await pool.query(
-      `SELECT
+    let query = `
+      SELECT
         invoices.*,
         patients.name AS patient_name
-       FROM invoices
-       JOIN patients ON invoices.patient_id = patients.id
-       WHERE invoices.clinic_id = $1
-       ORDER BY invoices.created_at DESC`,
-      [clinic_id]
-    );
+      FROM invoices
+      JOIN patients ON invoices.patient_id = patients.id
+      WHERE invoices.clinic_id = $1
+    `;
 
-    return apiResponse.success(
-      res,
-      invoices.rows,
-      "Invoices fetched successfully"
-    );
+    const values = [clinic_id];
+
+    // 🔥 FILTER BY PATIENT
+    if (patient_id) {
+      query += ` AND invoices.patient_id = $2`;
+      values.push(patient_id);
+    }
+
+    query += ` ORDER BY invoices.created_at DESC`;
+
+    const invoices = await pool.query(query, values);
+
+    res.json(invoices.rows);
 
   } catch (err) {
     next(err);
   }
-
 };
-
 
 /* =========================
    DOWNLOAD INVOICE PDF

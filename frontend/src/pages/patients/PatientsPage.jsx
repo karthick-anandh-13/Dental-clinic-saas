@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import API from "../../api/axios";
 import AddPatientModal from "../../components/patients/AddPatientModal";
-
+import { useNavigate } from "react-router-dom";
 function PatientsPage() {
+
+  const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -144,7 +146,9 @@ function PatientsPage() {
 
               patients.map((p) => (
 
-                <tr key={p.id} className="border-t hover:bg-gray-50">
+                <tr key={p.id} 
+                  onClick={() => navigate(`/patients/${p.id}`)}
+                  className="border-t hover:bg-gray-50 cursor-pointer">
 
                   <td className="p-4">{p.name}</td>
                   <td className="p-4">{p.phone}</td>
@@ -154,7 +158,10 @@ function PatientsPage() {
                   <td className="p-4">
 
                     <button
-                      onClick={() => deletePatient(p.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deletePatient(p.id);
+                      }}
                       className="text-red-500 hover:underline"
                     >
                       Delete

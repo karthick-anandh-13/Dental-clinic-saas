@@ -66,32 +66,35 @@ exports.createTreatment = async (req, res, next) => {
 ========================= */
 
 exports.getTreatments = async (req, res, next) => {
-
   try {
 
     const clinic_id = req.clinic.clinic_id;
+    const patient_id = req.query.patient_id;
 
-    const treatments = await pool.query(
-      `SELECT
+    let query = `
+      SELECT
         treatments.*,
         patients.name AS patient_name
-       FROM treatments
-       JOIN patients ON treatments.patient_id = patients.id
-       WHERE treatments.clinic_id = $1
-       ORDER BY treatments.created_at DESC`,
-      [clinic_id]
-    );
+      FROM treatments
+      JOIN patients ON treatments.patient_id = patients.id
+      WHERE treatments.clinic_id = $1
+    `;
 
-    return apiResponse.success(
-      res,
-      treatments.rows,
-      "Treatments fetched successfully"
-    );
+    const values = [clinic_id];
+
+    // 🔥 FILTER BY PATIENT
+    if (patient_id) {
+      query += ` AND treatments.patient_id = $2`;
+      values.push(patient_id);
+    }
+
+    query += ` ORDER BY created_at DESC`;
+
+    const treatments = await pool.query(query, values);
+
+    res.json(treatments.rows);
 
   } catch (err) {
-
     next(err);
-
   }
-
 };

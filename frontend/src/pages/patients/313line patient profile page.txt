@@ -1,0 +1,394 @@
+fix my code 
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import API from "../../api/axios";
+
+function PatientProfilePage() {
+
+  const { id } = useParams();
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [patient, setPatient] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [treatments, setTreatments] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [timeline, setTimeline] = useState([]);
+  /* =========================
+     FETCH FUNCTIONS
+  ========================= */
+
+  const fetchPatient = async () => {
+    try {
+      const res = await API.get(`/v1/patients/${id}`);
+      setPatient(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const res = await API.get(`/v1/appointments?patient_id=${id}`);
+      setAppointments(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchTreatments = async () => {
+    try {
+      const res = await API.get(`/v1/treatments?patient_id=${id}`);
+      setTreatments(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchInvoices = async () => {
+    try {
+      const res = await API.get(`/v1/invoices?patient_id=${id}`);
+      setInvoices(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const fetchFiles = async () => {
+    try {
+
+        const res = await API.get(`/v1/files/${id}`);
+        setFiles(res.data);
+
+    } catch (err) {
+        console.error(err);
+    }
+ };
+
+ const handleUpload = async () => {
+  try {
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("patient_id", id);
+
+    await API.post("/v1/files/upload", formData);
+
+    fetchFiles(); // refresh
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const buildTimeline = () => {
+
+  let events = [];
+
+  // Appointments
+  appointments.forEach((a) => {
+    events.push({
+      type: "appointment",
+      date: a.start_time,
+      data: a
+    });
+  });
+
+  // Treatments
+  treatments.forEach((t) => {
+    events.push({
+      type: "treatment",
+      date: t.created_at,
+      data: t
+    });
+  });
+
+  // Invoices
+  invoices.forEach((i) => {
+    events.push({
+      type: "invoice",
+      date: i.created_at,
+      data: i
+    });
+  });
+
+  // Sort latest first
+  events.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  setTimeline(events);
+};
+  /* =========================
+     LOAD DATA
+  ========================= */
+
+  useEffect(() => {
+    fetchPatient();
+    fetchAppointments();
+    fetchTreatments();
+    fetchInvoices();
+    fetchFiles();
+    buildTimeline();    
+  }, [appointments, treatments, invoices],[id]);
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (!patient) return <div className="p-6">Loading...</div>;
+
+  return (
+
+    <div className="p-6 space-y-6">
+
+      {/* HEADER */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border">
+        <h1 className="text-2xl font-semibold">{patient.name}</h1>
+        <p className="text-gray-500">{patient.phone}</p>
+        <p className="text-gray-500">{patient.address}</p>
+      </div>
+
+      {/* TABS */}
+      <div className="flex gap-6 border-b pb-2">
+        {["overview", "timeline", "appointments", "treatments", "invoices", "files"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`capitalize pb-2 ${
+              activeTab === tab
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* CONTENT */}
+      <div className="mt-6">
+
+        {/* OVERVIEW */}
+        {activeTab === "overview" && (
+          <div className="grid grid-cols-3 gap-6">
+            <div className="bg-white p-4 rounded-xl border">
+              <p className="text-gray-500 text-sm">Phone</p>
+              <p className="font-medium">{patient.phone}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border">
+              <p className="text-gray-500 text-sm">Age</p>
+              <p className="font-medium">{patient.age}</p>
+            </div>
+            <div className="bg-white p-4 rounded-xl border">
+              <p className="text-gray-500 text-sm">Address</p>
+              <p className="font-medium">{patient.address}</p>
+            </div>
+          </div>
+        )}
+
+        {/* APPOINTMENTS */}
+        {activeTab === "appointments" && (
+          <div className="bg-white rounded-xl border overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm text-gray-600">
+                  <th className="p-4">Dentist</th>
+                  <th className="p-4">Start Time</th>
+                  <th className="p-4">End Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                      No appointments found
+                    </td>
+                  </tr>
+                ) : (
+                  appointments.map((a) => (
+                    <tr key={a.id} className="border-t">
+                      <td className="p-4">{a.dentist_name}</td>
+                      <td className="p-4">{a.start_time}</td>
+                      <td className="p-4">{a.end_time}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TREATMENTS */}
+        {activeTab === "treatments" && (
+          <div className="bg-white rounded-xl border overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm text-gray-600">
+                  <th className="p-4">Treatment</th>
+                  <th className="p-4">Notes</th>
+                  <th className="p-4">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {treatments.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                      No treatments found
+                    </td>
+                  </tr>
+                ) : (
+                  treatments.map((t) => (
+                    <tr key={t.id} className="border-t">
+                      <td className="p-4">{t.treatment_type}</td>
+                      <td className="p-4">{t.notes}</td>
+                      <td className="p-4">₹{t.cost}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {activeTab === "timeline" && (
+
+  <div className="space-y-4">
+
+    {timeline.length === 0 ? (
+      <p className="text-gray-500">No activity found</p>
+    ) : (
+
+      timeline.map((event, index) => (
+
+        <div
+          key={index}
+          className="bg-white p-4 rounded-xl border shadow-sm"
+        >
+
+          <p className="text-sm text-gray-500 mb-2">
+            {new Date(event.date).toLocaleString()}
+          </p>
+
+          {event.type === "appointment" && (
+            <p>
+              🗓 Appointment with Dr. {event.data.dentist_name}
+            </p>
+          )}
+
+          {event.type === "treatment" && (
+            <p>
+              🦷 Treatment: {event.data.treatment_type}
+            </p>
+          )}
+
+          {event.type === "invoice" && (
+            <p>
+              💰 Invoice: ₹{event.data.amount}
+            </p>
+          )}
+
+        </div>
+
+      ))
+
+    )}
+
+  </div>
+
+)}
+
+        {/* INVOICES */}
+        {activeTab === "invoices" && (
+          <div className="bg-white rounded-xl border overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm text-gray-600">
+                  <th className="p-4">Amount</th>
+                  <th className="p-4">Payment Method</th>
+                  <th className="p-4">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="p-4 text-center text-gray-500">
+                      No invoices found
+                    </td>
+                  </tr>
+                ) : (
+                  invoices.map((inv) => (
+                    <tr key={inv.id} className="border-t">
+                      <td className="p-4">₹{inv.amount}</td>
+                      <td className="p-4">{inv.payment_method}</td>
+                      <td className="p-4">
+                        {new Date(inv.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* FILES */}
+        {activeTab === "files" && (
+
+  <div className="space-y-6">
+
+    {/* UPLOAD SECTION */}
+    <div className="bg-white p-4 rounded-xl border flex gap-4 items-center">
+
+      <input
+        type="file"
+        onChange={(e) => setSelectedFile(e.target.files[0])}
+      />
+
+      <button
+        onClick={handleUpload}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+      >
+        Upload
+      </button>
+
+    </div>
+
+    {/* FILE LIST */}
+    <div className="grid grid-cols-4 gap-4">
+
+      {files.length === 0 ? (
+        <p className="text-gray-500">No files uploaded</p>
+      ) : (
+
+        files.map((file) => (
+
+          <div
+            key={file.id}
+            className="border rounded-lg p-2 hover:shadow cursor-pointer"
+          >
+
+            <img
+              src={`http://localhost:5000/${file.file_path}`}
+              alt="xray"
+              className="w-full h-32 object-cover rounded"
+            />
+
+          </div>
+
+        ))
+
+      )}
+
+    </div>
+
+  </div>
+
+)}
+
+      </div>
+
+    </div>
+
+  );
+}
+
+export default PatientProfilePage;
