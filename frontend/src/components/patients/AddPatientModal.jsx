@@ -9,7 +9,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
     age: "",
     address: ""
   });
-
+  toast.success("Patient added");
   const handleChange = (e) => {
 
     setForm({
@@ -112,5 +112,5 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
   );
 
 }
-
+toast.success("Patient updated");
 export default AddPatientModal;

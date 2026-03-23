@@ -2,18 +2,23 @@ import { useState, useEffect } from "react";
 import API from "../../api/axios";
 import AddPatientModal from "../../components/patients/AddPatientModal";
 import { useNavigate } from "react-router-dom";
+import EditPatientModal from "../../components/patients/EditPatientModal";
+const [debouncedSearch, setDebouncedSearch] = useState("");
 function PatientsPage() {
 
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-
+  const [editOpen, setEditOpen] = useState(false);  
+  const [selectedPatient, setSelectedPatient] = useState(null); 
   const limit = 10;
-
+  const totalPages = patients.length < limit ? page : page + 1;
   const fetchPatients = async () => {
 
     try {
@@ -21,7 +26,7 @@ function PatientsPage() {
       setLoading(true);
 
       const res = await API.get(
-        `/v1/patients?page=${page}&limit=${limit}&search=${search}`
+        `/v1/patients?page=${page}&limit=${limit}&search=${debouncedSearch}`
       );
 
       const data = res.data.results || res.data;
@@ -41,7 +46,7 @@ function PatientsPage() {
 
   useEffect(() => {
     fetchPatients();
-  }, [search, page]);
+  }, [debouncedSearch, page]);
 
   const deletePatient = async (id) => {
 
@@ -60,6 +65,13 @@ function PatientsPage() {
     }
 
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   return (
 
@@ -104,6 +116,13 @@ function PatientsPage() {
         refreshPatients={fetchPatients}
       />
 
+      <EditPatientModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        patient={selectedPatient}
+        refreshPatients={fetchPatients}
+      />  
+
       {/* TABLE */}
 
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -128,11 +147,33 @@ function PatientsPage() {
 
             {loading ? (
 
-              <tr>
-                <td colSpan="5" className="text-center p-6 text-gray-500">
-                  Loading patients...
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, i) => (
+
+                <tr key={i} className="border-t animate-pulse">
+
+                  <td className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  </td>
+
+                  <td className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </td>
+
+                  <td className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  </td>
+
+                  <td className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-2/4"></div>
+                  </td>
+
+                  <td className="p-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  </td>
+
+                </tr>
+
+              ))
 
             ) : patients.length === 0 ? (
 
@@ -166,6 +207,16 @@ function PatientsPage() {
                     >
                       Delete
                     </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPatient(p);
+                        setEditOpen(true);
+                      }}
+                      className=" text-blue-500 hover:underline"
+                    >
+                      Edit
+                    </button>
 
                   </td>
 
@@ -183,26 +234,49 @@ function PatientsPage() {
 
       {/* PAGINATION */}
 
-      <div className="flex justify-end gap-3 mt-4">
+    <div className="flex justify-between items-center mt-6">
 
-        <button
-          onClick={() => setPage(page - 1)}
-          disabled={page === 1}
-          className="px-3 py-1 border rounded"
-        >
-          Previous
-        </button>
+  <button
+    onClick={() => setPage(page - 1)}
+    disabled={page === 1}
+    className={`px-3 py-1 rounded border ${
+      page === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+    }`}
+  >
+    ← Previous
+  </button>
 
-        <span>Page {page}</span>
+  <div className="flex gap-2">
 
-        <button
-          onClick={() => setPage(page + 1)}
-          className="px-3 py-1 border rounded"
-        >
-          Next
-        </button>
+    {[...Array(totalPages)].map((_, i) => (
+      <button
+        key={i}
+        onClick={() => setPage(i + 1)}
+        className={`px-3 py-1 rounded ${
+          page === i + 1
+            ? "bg-blue-600 text-white"
+            : "border hover:bg-gray-100"
+        }`}
+      >
+        {i + 1}
+      </button>
+    ))}
 
-      </div>
+  </div>
+
+  <button
+    onClick={() => setPage(page + 1)}
+    disabled={patients.length < limit}
+    className={`px-3 py-1 rounded border ${
+      patients.length < limit
+        ? "opacity-50 cursor-not-allowed"
+        : "hover:bg-gray-100"
+    }`}
+  >
+    Next →
+  </button>
+
+</div>
 
     </div>
 
