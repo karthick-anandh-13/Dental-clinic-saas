@@ -10,7 +10,6 @@ exports.getDashboardStats = async (req, res, next) => {
     /* =========================
        TOTAL PATIENTS
     ========================= */
-
     const totalPatients = await pool.query(
       "SELECT COUNT(*) FROM patients WHERE clinic_id = $1",
       [clinic_id]
@@ -19,7 +18,6 @@ exports.getDashboardStats = async (req, res, next) => {
     /* =========================
        APPOINTMENTS TODAY
     ========================= */
-
     const appointmentsToday = await pool.query(
       `SELECT COUNT(*)
        FROM appointments
@@ -29,53 +27,49 @@ exports.getDashboardStats = async (req, res, next) => {
     );
 
     /* =========================
-       MONTHLY REVENUE
+       TOTAL REVENUE
     ========================= */
-
-    const monthlyRevenue = await pool.query(
-      `SELECT
-         TO_CHAR(created_at, 'Mon') AS month,
-         SUM(amount) AS revenue
+    const totalRevenue = await pool.query(
+      `SELECT COALESCE(SUM(amount),0) as total
        FROM invoices
-       WHERE clinic_id = $1
-       GROUP BY month
-       ORDER BY MIN(created_at)`,
+       WHERE clinic_id = $1`,
       [clinic_id]
     );
 
     /* =========================
-       TOP TREATMENTS
+       LAST 7 DAYS CHART
     ========================= */
-
-    const topTreatments = await pool.query(
-      `SELECT treatment_type, COUNT(*) as count
-       FROM treatments
+    const chartData = await pool.query(
+      `SELECT 
+         TO_CHAR(start_time, 'DD Mon') as date,
+         COUNT(*) as count
+       FROM appointments
        WHERE clinic_id = $1
-       GROUP BY treatment_type
-       ORDER BY count DESC
-       LIMIT 5`,
+       AND start_time >= NOW() - INTERVAL '7 days'
+       GROUP BY date
+       ORDER BY MIN(start_time)`,
       [clinic_id]
     );
 
     /* =========================
-       RESPONSE
+       RESPONSE (IMPORTANT FIX)
     ========================= */
 
     return apiResponse.success(
       res,
       {
-        total_patients: Number(totalPatients.rows[0].count),
-        appointments_today: Number(appointmentsToday.rows[0].count),
-        monthly_revenue: monthlyRevenue.rows,
-        top_treatments: topTreatments.rows
+        stats: {
+          patients: Number(totalPatients.rows[0].count),
+          appointments: Number(appointmentsToday.rows[0].count),
+          revenue: Number(totalRevenue.rows[0].total)
+        },
+        chart: chartData.rows
       },
-      "Dashboard statistics fetched successfully"
+      "Dashboard data fetched successfully"
     );
 
   } catch (err) {
-
     next(err);
-
   }
 
 };

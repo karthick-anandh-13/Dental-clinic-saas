@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../../api/axios";
+import toast from "react-hot-toast"; // ✅ IMPORTANT
 
 function AddPatientModal({ isOpen, onClose, refreshPatients }) {
 
@@ -9,33 +10,32 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
     age: "",
     address: ""
   });
-  toast.success("Patient added");
-  const handleChange = (e) => {
 
+  const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
-
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
 
       await API.post("/v1/patients", form);
 
+      toast.success("Patient added successfully"); // ✅ CORRECT PLACE
+
       refreshPatients();
       onClose();
 
     } catch (error) {
 
-      console.error("Patient creation failed", error);
+      toast.error("Failed to add patient"); // ✅ ADD THIS
+      console.error(error);
 
     }
-
   };
 
   if (!isOpen) return null;
@@ -110,7 +110,6 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
     </div>
 
   );
-
 }
-toast.success("Patient updated");
+
 export default AddPatientModal;

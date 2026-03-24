@@ -7,6 +7,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import PatientsPage from "./pages/patients/PatientsPage";
+import PatientProfilePage from "./pages/patients/PatientProfilePage"; // ✅ FIX
 
 /* Auth */
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -33,17 +34,21 @@ function App() {
         >
 
           {/* Default Redirect */}
-          <Route index element={<Navigate to="/dashboard" />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
 
           {/* Dashboard */}
           <Route path="dashboard" element={<DashboardPage />} />
-          
-          <Route path="patients/:id" element={<PatientProfilePage />} />        
 
           {/* Patients */}
           <Route path="patients" element={<PatientsPage />} />
 
+          {/* Patient Profile */}
+          <Route path="patients/:id" element={<PatientProfilePage />} />
+
         </Route>
+
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
 
