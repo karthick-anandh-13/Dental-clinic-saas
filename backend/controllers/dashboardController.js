@@ -5,14 +5,20 @@ exports.getDashboardStats = async (req, res, next) => {
 
   try {
 
-    const clinic_id = req.clinic.clinic_id;
-
+    const clinicId = req.clinic.clinic_id;
+    console.log("Clinic ID:", clinicId);
+    if (!clinicId) {
+      return res.status(400).json({
+        success: false,
+        message: "Clinic ID missing"
+      });
+    }
     /* =========================
        TOTAL PATIENTS
     ========================= */
     const totalPatients = await pool.query(
       "SELECT COUNT(*) FROM patients WHERE clinic_id = $1",
-      [clinic_id]
+      [clinicId]
     );
 
     /* =========================
@@ -23,7 +29,7 @@ exports.getDashboardStats = async (req, res, next) => {
        FROM appointments
        WHERE clinic_id = $1
        AND DATE(start_time) = CURRENT_DATE`,
-      [clinic_id]
+      [clinicId]
     );
 
     /* =========================
@@ -33,7 +39,7 @@ exports.getDashboardStats = async (req, res, next) => {
       `SELECT COALESCE(SUM(amount),0) as total
        FROM invoices
        WHERE clinic_id = $1`,
-      [clinic_id]
+      [clinicId]
     );
 
     /* =========================
@@ -48,7 +54,7 @@ exports.getDashboardStats = async (req, res, next) => {
        AND start_time >= NOW() - INTERVAL '7 days'
        GROUP BY date
        ORDER BY MIN(start_time)`,
-      [clinic_id]
+      [clinicId]
     );
 
     /* =========================

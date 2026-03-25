@@ -17,7 +17,7 @@ router.post("/signup", async (req, res) => {
 
     const newClinic = await pool.query(
       "INSERT INTO clinics (clinic_name, email, password) VALUES ($1,$2,$3) RETURNING *",
-      [clinic_name, email, hashedPassword]   // FIXED
+      [clinic_name, email, hashedPassword]
     );
 
     res.json({
@@ -45,7 +45,7 @@ router.post("/login", async (req, res) => {
     );
 
     if (clinic.rows.length === 0) {
-      return res.status(400).json("Clinic not found");
+      return res.status(400).json({ message: "Clinic not found" });
     }
 
     const validPassword = await bcrypt.compare(
@@ -54,13 +54,14 @@ router.post("/login", async (req, res) => {
     );
 
     if (!validPassword) {
-      return res.status(401).json("Invalid password");
+      return res.status(401).json({ message: "Invalid password" });
     }
 
+    // 🔥 FIX: use ENV secret (same as middleware)
     const token = jwt.sign(
       { clinic_id: clinic.rows[0].id },
-      "supersecretkey",
-      { expiresIn: "7d" }
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
     );
 
     res.json({

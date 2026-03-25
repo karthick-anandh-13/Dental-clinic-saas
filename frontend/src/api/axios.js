@@ -1,17 +1,25 @@
 import axios from "axios";
-
+import useAuthStore from "../store/authStore";
 const API = axios.create({
   baseURL: "http://localhost:5000/api"
 });
 
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
+/* =========================
+   ATTACH TOKEN
+========================= */
+
+API.interceptors.request.use((config) => {
+
+  const token = useAuthStore.getState().token;
 
   if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
-  return req;
+  return config; // ✅ MUST return config
+
+}, (error) => {
+  return Promise.reject(error);
 });
 
 export default API;

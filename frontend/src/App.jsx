@@ -7,55 +7,46 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import PatientsPage from "./pages/patients/PatientsPage";
-import PatientProfilePage from "./pages/patients/PatientProfilePage"; // ✅ FIX
+import PatientProfilePage from "./pages/patients/PatientProfilePage";
 
 /* Auth */
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-
   return (
-
     <BrowserRouter>
-
       <Routes>
 
         {/* PUBLIC ROUTE */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* PROTECTED ROUTES */}
+        {/* PROTECTED WRAPPER */}
         <Route
-          path="/"
           element={
             <ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>
           }
         >
-
-          {/* Default Redirect */}
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Dashboard */}
-          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* Patients */}
-          <Route path="patients" element={<PatientsPage />} />
+          <Route path="/patients" element={<PatientsPage />} />
 
           {/* Patient Profile */}
-          <Route path="patients/:id" element={<PatientProfilePage />} />
-
+          <Route path="/patients/:id" element={<PatientProfilePage />} />
         </Route>
 
         {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
-
     </BrowserRouter>
-
   );
-
 }
 
 export default App;
