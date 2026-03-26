@@ -25,16 +25,12 @@ function LoginPage() {
 
       const res = await API.post("/v1/auth/login", {
         email,
-        password
+        password,
       });
 
-      // ✅ store token + clinic (single source of truth)
       setAuth(res.data.token, res.data.clinic);
 
-      // ✅ ensure state is set before navigation
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 0);
+      navigate("/dashboard");
 
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
@@ -45,18 +41,21 @@ function LoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
-        <h2 className="text-2xl font-semibold mb-6 text-center">
+    <div className="w-full flex items-center justify-center">
+
+      {/* 🔥 Login Card */}
+      <div className="glass rounded-2xl p-8 w-[380px] shadow-2xl">
+
+        <h2 className="text-3xl font-semibold text-white text-center mb-6">
           Clinic Login
         </h2>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
 
           <input
             type="email"
             placeholder="Email"
-            className="w-full border rounded-lg px-4 py-2"
+            className="w-full px-4 py-2 rounded-lg input-premium"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -64,7 +63,7 @@ function LoginPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full border rounded-lg px-4 py-2"
+            className="w-full px-4 py-2 rounded-lg input-premium"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -72,13 +71,15 @@ function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            className="w-full py-2 rounded-lg btn-premium font-semibold"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
 
         </form>
+
       </div>
+
     </div>
   );
 }

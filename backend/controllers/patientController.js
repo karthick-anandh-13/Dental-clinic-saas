@@ -8,13 +8,26 @@ const apiResponse = require("../utils/apiResponse");
 
 exports.createPatient = async (req, res, next) => {
   try {
-    const clinic_id = req.clinic.clinic_id;
+    const clinic_id = req.clinic?.clinic_id;
     const user_id = req.user?.id || null;
 
-    const { name, phone, age, address } = req.body;
+    if (!clinic_id) {
+      return apiResponse.error(res, "Unauthorized: clinic missing", 401);
+    }
 
-    // Basic validation safety
-    if (!name || !phone) {
+    /* 🔥 Accept both formats (robust API) */
+    const {
+      name,
+      phone,
+      phone_number,
+      age,
+      address
+    } = req.body;
+
+    const finalPhone = phone || phone_number;
+
+    /* 🔥 Validation */
+    if (!name || !finalPhone) {
       return apiResponse.error(res, "Name and phone are required", 400);
     }
 
@@ -22,7 +35,13 @@ exports.createPatient = async (req, res, next) => {
       `INSERT INTO patients (clinic_id, name, phone, age, address)
        VALUES ($1,$2,$3,$4,$5)
        RETURNING *`,
-      [clinic_id, name, phone, age || null, address || null]
+      [
+        clinic_id,
+        name.trim(),
+        finalPhone.trim(),
+        age ? Number(age) : null,
+        address || null
+      ]
     );
 
     await auditService.logAction(
@@ -40,6 +59,7 @@ exports.createPatient = async (req, res, next) => {
     );
 
   } catch (err) {
+    console.error("Create patient error:", err);
     next(err);
   }
 };
@@ -50,7 +70,11 @@ exports.createPatient = async (req, res, next) => {
 
 exports.getPatients = async (req, res, next) => {
   try {
-    const clinic_id = req.clinic.clinic_id;
+    const clinic_id = req.clinic?.clinic_id;
+
+    if (!clinic_id) {
+      return apiResponse.error(res, "Unauthorized", 401);
+    }
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -79,6 +103,7 @@ exports.getPatients = async (req, res, next) => {
     );
 
   } catch (err) {
+    console.error("Get patients error:", err);
     next(err);
   }
 };
@@ -89,7 +114,7 @@ exports.getPatients = async (req, res, next) => {
 
 exports.getPatientById = async (req, res, next) => {
   try {
-    const clinic_id = req.clinic.clinic_id;
+    const clinic_id = req.clinic?.clinic_id;
     const patient_id = req.params.id;
 
     const patient = await pool.query(
@@ -110,6 +135,7 @@ exports.getPatientById = async (req, res, next) => {
     );
 
   } catch (err) {
+    console.error("Get patient error:", err);
     next(err);
   }
 };
@@ -120,18 +146,33 @@ exports.getPatientById = async (req, res, next) => {
 
 exports.updatePatient = async (req, res, next) => {
   try {
-    const clinic_id = req.clinic.clinic_id;
+    const clinic_id = req.clinic?.clinic_id;
     const user_id = req.user?.id || null;
     const patient_id = req.params.id;
 
-    const { name, phone, age, address } = req.body;
+    const {
+      name,
+      phone,
+      phone_number,
+      age,
+      address
+    } = req.body;
+
+    const finalPhone = phone || phone_number;
 
     const updatedPatient = await pool.query(
       `UPDATE patients
        SET name=$1, phone=$2, age=$3, address=$4
        WHERE id=$5 AND clinic_id=$6
        RETURNING *`,
-      [name, phone, age || null, address || null, patient_id, clinic_id]
+      [
+        name,
+        finalPhone,
+        age ? Number(age) : null,
+        address || null,
+        patient_id,
+        clinic_id
+      ]
     );
 
     if (updatedPatient.rows.length === 0) {
@@ -153,6 +194,7 @@ exports.updatePatient = async (req, res, next) => {
     );
 
   } catch (err) {
+    console.error("Update patient error:", err);
     next(err);
   }
 };
@@ -163,7 +205,7 @@ exports.updatePatient = async (req, res, next) => {
 
 exports.deletePatient = async (req, res, next) => {
   try {
-    const clinic_id = req.clinic.clinic_id;
+    const clinic_id = req.clinic?.clinic_id;
     const user_id = req.user?.id || null;
     const patient_id = req.params.id;
 
@@ -193,6 +235,7 @@ exports.deletePatient = async (req, res, next) => {
     );
 
   } catch (err) {
+    console.error("Delete patient error:", err);
     next(err);
   }
 };

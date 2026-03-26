@@ -1,6 +1,6 @@
 import { useState } from "react";
 import API from "../../api/axios";
-import toast from "react-hot-toast"; // ✅ IMPORTANT
+import toast from "react-hot-toast";
 
 function AddPatientModal({ isOpen, onClose, refreshPatients }) {
 
@@ -21,19 +21,45 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    /* 🔥 Frontend validation */
+    if (!form.name || !form.phone || !form.age) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
     try {
 
-      await API.post("/v1/patients", form);
+      const payload = {
+        name: form.name,
+        phone_number: form.phone,   // ✅ FIXED KEY
+        age: Number(form.age),      // ✅ ensure number
+        address: form.address
+      };
 
-      toast.success("Patient added successfully"); // ✅ CORRECT PLACE
+      console.log("Sending payload:", payload); // 🔍 DEBUG
+
+      await API.post("/v1/patients", payload);
+
+      toast.success("Patient added successfully");
 
       refreshPatients();
       onClose();
 
+      // 🔥 Reset form
+      setForm({
+        name: "",
+        phone: "",
+        age: "",
+        address: ""
+      });
+
     } catch (error) {
 
-      toast.error("Failed to add patient"); // ✅ ADD THIS
-      console.error(error);
+      console.error("Add patient error:", error.response?.data || error.message);
+
+      toast.error(
+        error.response?.data?.message || "Failed to add patient"
+      );
 
     }
   };
@@ -42,9 +68,9 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
 
   return (
 
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
 
-      <div className="bg-white rounded-xl p-6 w-96">
+      <div className="bg-white rounded-xl p-6 w-96 shadow-xl">
 
         <h2 className="text-lg font-semibold mb-4">
           Add Patient
@@ -56,16 +82,16 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
             name="name"
             placeholder="Patient Name"
             className="w-full border rounded-lg px-3 py-2"
+            value={form.name}
             onChange={handleChange}
-            required
           />
 
           <input
             name="phone"
             placeholder="Phone"
             className="w-full border rounded-lg px-3 py-2"
+            value={form.phone}
             onChange={handleChange}
-            required
           />
 
           <input
@@ -73,14 +99,15 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
             placeholder="Age"
             type="number"
             className="w-full border rounded-lg px-3 py-2"
+            value={form.age}
             onChange={handleChange}
-            required
           />
 
           <input
             name="address"
             placeholder="Address"
             className="w-full border rounded-lg px-3 py-2"
+            value={form.address}
             onChange={handleChange}
           />
 

@@ -1,3 +1,98 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================
+   🎨 COLOR SYSTEM
+========================= */
+:root {
+  --navy: #0B1D2A;
+  --gold: #D4AF37;
+  --crimson: #8B0000;
+  --black: #000000;
+  --white: #FFFFFF;
+}
+
+/* =========================
+   🌌 GLOBAL BACKGROUND
+========================= */
+body {
+  background: radial-gradient(circle at 20% 20%, #0B1D2A, #000000);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* =========================
+   ✨ GLOW BLOBS
+========================= */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.3;
+  animation: floatBlob 10s infinite ease-in-out;
+}
+
+.blob-red {
+  background: var(--crimson);
+}
+
+.blob-gold {
+  background: var(--gold);
+}
+
+.blob-navy {
+  background: var(--navy);
+}
+
+/* =========================
+   🔥 ANIMATIONS
+========================= */
+@keyframes floatBlob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(40px, -40px) scale(1.1);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* =========================
+   🧊 GLASS EFFECT
+========================= */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================
+   ✍️ INPUT STYLE
+========================= */
+.input-premium {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.input-premium:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+/* =========================
+   🔘 BUTTON STYLE
+========================= */
+.btn-premium {
+  background: linear-gradient(135deg, var(--crimson), var(--gold));
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}

@@ -34,7 +34,7 @@ function PatientsPage() {
 
       const data = res.data.results || res.data;
 
-      setPatients(data);
+      setPatients(res.data.data.patients || []);
 
     } catch (error) {
       console.error("Failed to fetch patients", error);
