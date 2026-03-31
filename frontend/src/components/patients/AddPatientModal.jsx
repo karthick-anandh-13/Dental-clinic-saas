@@ -19,50 +19,47 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    /* 🔥 Frontend validation */
-    if (!form.name || !form.phone || !form.age) {
-      toast.error("Please fill required fields");
-      return;
-    }
-
-    try {
-
-      const payload = {
-        name: form.name,
-        phone_number: form.phone,   // ✅ FIXED KEY
-        age: Number(form.age),      // ✅ ensure number
-        address: form.address
-      };
-
-      console.log("Sending payload:", payload); // 🔍 DEBUG
-
-      await API.post("/v1/patients", payload);
-
-      toast.success("Patient added successfully");
-
-      refreshPatients();
-      onClose();
-
-      // 🔥 Reset form
-      setForm({
-        name: "",
-        phone: "",
-        age: "",
-        address: ""
-      });
-
-    } catch (error) {
-
-      console.error("Add patient error:", error.response?.data || error.message);
-
-      toast.error(
-        error.response?.data?.message || "Failed to add patient"
-      );
-
-    }
+  /* 🔥 sanitize input */
+  const payload = {
+    name: form.name?.trim(),
+    phone: form.phone?.trim(),
+    age: form.age ? Number(form.age) : null,
+    address: form.address?.trim() || null
   };
+
+  console.log("FINAL PAYLOAD:", payload); // 🔍 DEBUG
+
+  /* 🔥 validation */
+  if (!payload.name || !payload.phone) {
+    toast.error("Name and phone are required");
+    return;
+  }
+
+  try {
+    await API.post("/v1/patients", payload);
+
+    toast.success("Patient added successfully");
+
+    refreshPatients();
+    onClose();
+
+    setForm({
+      name: "",
+      phone: "",
+      age: "",
+      address: ""
+    });
+
+  } catch (error) {
+    console.error("SERVER ERROR:", error.response?.data);
+
+    toast.error(
+      error.response?.data?.message || "Failed to add patient"
+    );
+  }
+};
 
   if (!isOpen) return null;
 

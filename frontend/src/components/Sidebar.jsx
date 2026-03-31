@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function Sidebar() {
   return (
-    <div className="w-64 h-screen bg-white border-r p-4">
+    <div className="w-64 h-screen bg-black-50 border-r p-4">
 
       <h2 className="text-2xl font-bold mb-8 text-blue-600">
         Dental SaaS
