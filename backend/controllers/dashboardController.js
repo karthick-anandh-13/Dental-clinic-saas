@@ -58,8 +58,35 @@ exports.getDashboardStats = async (req, res, next) => {
     );
 
     /* =========================
-       RESPONSE (IMPORTANT FIX)
+       PENDING PAYMENTS
     ========================= */
+    const pendingPayments = await pool.query(
+      `SELECT
+         COALESCE(SUM(treatments.cost) - SUM(invoices.amount), 0) AS outstanding
+       FROM treatments
+       LEFT JOIN invoices ON treatments.id = invoices.treatment_id
+       WHERE treatments.clinic_id = $1`,
+      [clinicId]
+    );
+
+    /* =========================
+       UPCOMING APPOINTMENTS
+    ========================= */
+    const upcomingAppointments = await pool.query(
+      `SELECT
+         appointments.id,
+         patients.name AS patient_name,
+         users.name AS dentist_name,
+         appointments.start_time
+       FROM appointments
+       JOIN patients ON appointments.patient_id = patients.id
+       JOIN users ON appointments.dentist_id = users.id
+       WHERE appointments.clinic_id = $1
+       AND appointments.start_time >= NOW()
+       ORDER BY appointments.start_time ASC
+       LIMIT 5`,
+      [clinicId]
+    );
 
     return apiResponse.success(
       res,
@@ -67,9 +94,11 @@ exports.getDashboardStats = async (req, res, next) => {
         stats: {
           patients: Number(totalPatients.rows[0].count),
           appointments: Number(appointmentsToday.rows[0].count),
-          revenue: Number(totalRevenue.rows[0].total)
+          revenue: Number(totalRevenue.rows[0].total),
+          outstanding: Number(pendingPayments.rows[0].outstanding)
         },
-        chart: chartData.rows
+        chart: chartData.rows,
+        upcoming: upcomingAppointments.rows
       },
       "Dashboard data fetched successfully"
     );

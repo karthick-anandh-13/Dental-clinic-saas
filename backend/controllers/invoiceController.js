@@ -65,9 +65,12 @@ exports.getInvoices = async (req, res, next) => {
     let query = `
       SELECT
         invoices.*,
-        patients.name AS patient_name
+        patients.name AS patient_name,
+        treatments.treatment_type,
+        treatments.cost AS treatment_cost
       FROM invoices
       JOIN patients ON invoices.patient_id = patients.id
+      JOIN treatments ON invoices.treatment_id = treatments.id
       WHERE invoices.clinic_id = $1
     `;
 

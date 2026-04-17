@@ -67,7 +67,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
 
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
 
-      <div className="bg-white rounded-xl p-6 w-96 shadow-xl">
+      <div className="bg-black rounded-xl p-6 w-96 shadow-xl">
 
         <h2 className="text-lg font-semibold mb-4">
           Add Patient
@@ -78,7 +78,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
           <input
             name="name"
             placeholder="Patient Name"
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 text-violet-600"
             value={form.name}
             onChange={handleChange}
           />
@@ -86,7 +86,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
           <input
             name="phone"
             placeholder="Phone"
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 text-violet-600"
             value={form.phone}
             onChange={handleChange}
           />
@@ -95,7 +95,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
             name="age"
             placeholder="Age"
             type="number"
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 text-violet-600"
             value={form.age}
             onChange={handleChange}
           />
@@ -103,7 +103,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
           <input
             name="address"
             placeholder="Address"
-            className="w-full border rounded-lg px-3 py-2"
+            className="w-full border rounded-lg px-3 py-2 text-violet-600"
             value={form.address}
             onChange={handleChange}
           />
@@ -120,7 +120,7 @@ function AddPatientModal({ isOpen, onClose, refreshPatients }) {
 
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className="px-4 py-2 bg-blue-600 text-red-500 rounded-lg"
             >
               Save
             </button>

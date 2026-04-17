@@ -44,7 +44,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
 
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
 
-      <div className="bg-white p-6 rounded-xl w-96 space-y-4">
+      <div className="bg-black p-6 rounded-xl w-96 space-y-4">
 
         <h2 className="text-lg font-semibold">Edit Patient</h2>
 
@@ -53,7 +53,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
           value={form.name}
           onChange={handleChange}
           placeholder="Name"
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-3 py-2 rounded text-violet-600"
         />
 
         <input
@@ -61,7 +61,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
           value={form.phone}
           onChange={handleChange}
           placeholder="Phone"
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-3 py-2 rounded text-violet-600"
         />
 
         <input
@@ -69,7 +69,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
           value={form.age}
           onChange={handleChange}
           placeholder="Age"
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-3 py-2 rounded text-violet-600"
         />
 
         <input
@@ -77,7 +77,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
           value={form.address}
           onChange={handleChange}
           placeholder="Address"
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-3 py-2 rounded text-violet-600"
         />
 
         <div className="flex justify-end gap-3">
@@ -91,7 +91,7 @@ function EditPatientModal({ isOpen, onClose, patient, refreshPatients }) {
 
           <button
             onClick={handleUpdate}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 bg-black-600 text-black rounded"
           >
             Update
           </button>

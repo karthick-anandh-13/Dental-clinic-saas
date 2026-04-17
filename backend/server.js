@@ -15,6 +15,8 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const userRoutes = require("./routes/userRoutes");
 const medicalHistoryRoutes = require("./routes/medicalHistoryRoutes");
 const fileRoutes = require("./routes/fileRoutes");
+const consultationRoutes = require("./routes/consultationRoutes");
+const inventoryRoutes = require("./routes/inventoryRoutes");
 
 const limiter = require("./middleware/rateLimiter");
 const errorHandler = require("./middleware/errorMiddleware");
@@ -57,6 +59,8 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/medical-history", medicalHistoryRoutes);
 app.use("/api/v1/files", fileRoutes);
 app.use("/api/v1/audit", auditRoutes);
+app.use("/api/v1/consultations", consultationRoutes);
+app.use("/api/v1/inventory", inventoryRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 /* ========================
    ROOT ROUTE

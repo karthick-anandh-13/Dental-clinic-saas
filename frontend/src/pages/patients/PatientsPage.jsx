@@ -4,8 +4,10 @@ import AddPatientModal from "../../components/patients/AddPatientModal";
 import EditPatientModal from "../../components/patients/EditPatientModal";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useLanguage } from "../../context/LanguageContext";
 
 function PatientsPage() {
+  const { t } = useLanguage();
 
   const navigate = useNavigate();
 
@@ -34,13 +36,21 @@ function PatientsPage() {
 
       const data = res.data.results || res.data;
 
-      setPatients(res.data.data.patients || []);
+      setPatients(res.data.data.results || []);
 
     } catch (error) {
       console.error("Failed to fetch patients", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  /* =========================
+     REFRESH PATIENTS (reset to page 1)
+  ========================= */
+  const refreshPatients = () => {
+    setPage(1);
+    fetchPatients();
   };
 
   /* =========================
@@ -84,13 +94,13 @@ function PatientsPage() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Patients</h1>
+        <h1 className="text-2xl font-semibold">{t("patientsTitle")}</h1>
 
         <button
           onClick={() => setModalOpen(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
-          Add Patient
+          {t("addPatient")}
         </button>
       </div>
 
@@ -98,7 +108,7 @@ function PatientsPage() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search patients..."
+          placeholder={t("searchPatients")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border px-4 py-2 rounded-lg w-64"
@@ -126,11 +136,11 @@ function PatientsPage() {
 
           <thead className="bg-gray-50">
             <tr className="text-left text-sm text-gray-600">
-              <th className="p-4">Name</th>
-              <th className="p-4">Phone</th>
-              <th className="p-4">Age</th>
-              <th className="p-4">Address</th>
-              <th className="p-4">Actions</th>
+              <th className="p-4">{t("patientsColumnName")}</th>
+              <th className="p-4">{t("patientsColumnPhone")}</th>
+              <th className="p-4">{t("patientsColumnAge")}</th>
+              <th className="p-4">{t("patientsColumnAddress")}</th>
+              <th className="p-4">{t("patientsActions")}</th>
             </tr>
           </thead>
 
@@ -139,13 +149,13 @@ function PatientsPage() {
             {loading ? (
               <tr>
                 <td colSpan="5" className="text-center p-6 text-gray-500">
-                  Loading...
+                  {t("loading")}
                 </td>
               </tr>
             ) : patients.length === 0 ? (
               <tr>
                 <td colSpan="5" className="text-center p-6 text-gray-500">
-                  No patients found
+                  {t("noPatientsFound")}
                 </td>
               </tr>
             ) : (
@@ -157,12 +167,22 @@ function PatientsPage() {
                   className="border-t hover:bg-gray-50 cursor-pointer"
                 >
 
-                  <td className="p-4">{p.name}</td>
-                  <td className="p-4">{p.phone}</td>
-                  <td className="p-4">{p.age}</td>
-                  <td className="p-4">{p.address}</td>
+                  <td className="p-4 text-violet-600">{p.name}</td>
+                  <td className="p-4 text-violet-600">{p.phone}</td>
+                  <td className="p-4 text-violet-600">{p.age}</td>
+                  <td className="p-4 text-violet-600">{p.address}</td>
 
                   <td className="p-4 flex gap-3">
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/patients/${p.id}/history`);
+                      }}
+                      className="text-green-500 hover:underline"
+                    >
+                      {t("patientHistoryButton")}
+                    </button>
 
                     <button
                       onClick={(e) => {
@@ -172,7 +192,7 @@ function PatientsPage() {
                       }}
                       className="text-blue-500 hover:underline"
                     >
-                      Edit
+                      {t("patientEditButton")}
                     </button>
 
                     <button
@@ -182,7 +202,7 @@ function PatientsPage() {
                       }}
                       className="text-red-500 hover:underline"
                     >
-                      Delete
+                      {t("patientDeleteButton")}
                     </button>
 
                   </td>

@@ -200,6 +200,37 @@ exports.updatePatient = async (req, res, next) => {
 };
 
 /* =========================
+   GET PATIENT BY ID
+========================= */
+
+exports.getPatientById = async (req, res, next) => {
+  try {
+    const clinic_id = req.clinic?.clinic_id;
+    const patient_id = req.params.id;
+
+    const patient = await pool.query(
+      `SELECT * FROM patients
+       WHERE id = $1 AND clinic_id = $2`,
+      [patient_id, clinic_id]
+    );
+
+    if (patient.rows.length === 0) {
+      return apiResponse.error(res, "Patient not found", 404);
+    }
+
+    return apiResponse.success(
+      res,
+      patient.rows[0],
+      "Patient retrieved successfully"
+    );
+
+  } catch (err) {
+    console.error("Get patient by id error:", err);
+    next(err);
+  }
+};
+
+/* =========================
    DELETE PATIENT
 ========================= */
 

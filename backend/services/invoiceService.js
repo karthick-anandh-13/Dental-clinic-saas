@@ -20,8 +20,9 @@ exports.generateInvoicePDF = (invoiceData) => {
 
   doc.fontSize(12).text(`Patient: ${invoiceData.patient_name}`);
   doc.text(`Treatment: ${invoiceData.treatment_type}`);
-  doc.text(`Amount: ₹${invoiceData.amount}`);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`);
+  doc.text(`Amount: $${invoiceData.amount}`);
+  doc.text(`Date: ${new Date(invoiceData.created_at).toLocaleDateString()}`);
+  doc.text(`Payment Method: ${invoiceData.payment_method}`);
 
   doc.end();
 

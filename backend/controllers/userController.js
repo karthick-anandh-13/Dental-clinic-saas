@@ -63,3 +63,23 @@ exports.createUser = async (req, res, next) => {
   }
 
 };
+
+/* =========================
+   GET USERS
+========================= */
+
+exports.getUsers = async (req, res, next) => {
+  try {
+    const clinic_id = req.clinic.clinic_id;
+
+    const users = await pool.query(
+      `SELECT id, name, email FROM users WHERE clinic_id = $1`,
+      [clinic_id]
+    );
+
+    return apiResponse.success(res, users.rows, "Users retrieved successfully");
+
+  } catch (err) {
+    next(err);
+  }
+};

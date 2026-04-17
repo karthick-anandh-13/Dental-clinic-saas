@@ -60,21 +60,44 @@ exports.createAppointment = async (req, res, next) => {
       ]
     );
 
-    /* AUDIT LOG */
+    const appointment = newAppointment.rows[0];
 
+    /* FETCH PATIENT AND DENTIST FOR NOTIFICATIONS */
+    const patientResult = await pool.query(
+      "SELECT name, phone FROM patients WHERE id = $1 AND clinic_id = $2",
+      [patient_id, clinic_id]
+    );
+    const dentistResult = await pool.query(
+      "SELECT name FROM users WHERE id = $1 AND clinic_id = $2",
+      [dentist_id, clinic_id]
+    );
+
+    const patient = patientResult.rows[0];
+    const dentist = dentistResult.rows[0];
+
+    /* AUDIT LOG */
     await auditService.logAction(
       clinic_id,
       req.user?.id || null,
       "CREATE",
       "APPOINTMENT",
-      newAppointment.rows[0].id
+      appointment.id
     );
 
-    return apiResponse.success(
+    apiResponse.success(
       res,
-      newAppointment.rows[0],
+      appointment,
       "Appointment created successfully"
     );
+
+    /* SEND NOTIFICATIONS IN BACKGROUND */
+    if (patient?.phone && dentist?.name) {
+      const { notifyAppointment } = require("../services/notificationService");
+      notifyAppointment(patient.phone, patient.name, dentist.name, appointment.start_time)
+        .catch((error) => console.error("Appointment notification failed:", error));
+    }
+
+    return;
 
   } catch (err) {
     next(err);
@@ -117,6 +140,44 @@ exports.getAppointments = async (req, res, next) => {
     const appointments = await pool.query(query, values);
 
     res.json(appointments.rows);
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* =========================
+   DELETE APPOINTMENT
+========================= */
+
+exports.deleteAppointment = async (req, res, next) => {
+  try {
+    const clinic_id = req.clinic.clinic_id;
+    const appointment_id = req.params.id;
+
+    const appointment = await pool.query(
+      `SELECT * FROM appointments WHERE id = $1 AND clinic_id = $2`,
+      [appointment_id, clinic_id]
+    );
+
+    if (appointment.rows.length === 0) {
+      return apiResponse.error(res, "Appointment not found", 404);
+    }
+
+    await pool.query(
+      `DELETE FROM appointments WHERE id = $1`,
+      [appointment_id]
+    );
+
+    await auditService.logAction(
+      clinic_id,
+      req.user?.id || null,
+      "DELETE",
+      "APPOINTMENT",
+      appointment_id
+    );
+
+    return apiResponse.success(res, null, "Appointment deleted successfully");
 
   } catch (err) {
     next(err);

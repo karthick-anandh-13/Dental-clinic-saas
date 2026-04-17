@@ -1,9 +1,13 @@
+import { useLanguage } from "../context/LanguageContext";
+
 function Navbar() {
+  const { t } = useLanguage();
+
   return (
     <div className="h-16 bg-white border-b flex items-center justify-between px-6">
 
       <h1 className="text-lg font-semibold">
-        Dashboard
+        {t("dashboardTitle")}
       </h1>
 
       <div className="flex items-center gap-4">

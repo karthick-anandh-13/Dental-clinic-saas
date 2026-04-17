@@ -73,26 +73,24 @@ exports.getTreatments = async (req, res, next) => {
 
     let query = `
       SELECT
-        treatments.*,
-        patients.name AS patient_name
+        treatments.*
       FROM treatments
-      JOIN patients ON treatments.patient_id = patients.id
       WHERE treatments.clinic_id = $1
     `;
 
     const values = [clinic_id];
 
-    // 🔥 FILTER BY PATIENT
+    // 🔥 FILTER BY PATIENT IF PROVIDED
     if (patient_id) {
       query += ` AND treatments.patient_id = $2`;
       values.push(patient_id);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY treatments.created_at DESC`;
 
     const treatments = await pool.query(query, values);
 
-    res.json(treatments.rows);
+    return apiResponse.success(res, treatments.rows, "Treatments retrieved successfully");
 
   } catch (err) {
     next(err);

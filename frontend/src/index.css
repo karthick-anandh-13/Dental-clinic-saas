@@ -17,7 +17,7 @@
    🌌 GLOBAL BACKGROUND
 ========================= */
 body {
-  background: radial-gradient(circle at 20% 20%, #0B1D2A, #000000);
+  background: #00FFFF;
   color: var(--white);
   overflow-x: hidden;
 }

@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const pool = require("../config/db");
+const { notifyReminder } = require("./notificationService");
 
 const startReminderService = () => {
 
@@ -20,13 +21,12 @@ const startReminderService = () => {
       );
 
       appointments.rows.forEach(appt => {
-
         console.log(
           `Reminder: ${appt.patient_name} has an appointment tomorrow at ${appt.start_time}`
         );
 
-        /* Later we will send WhatsApp or SMS here */
-
+        notifyReminder(appt.phone, appt.patient_name, appt.start_time)
+          .catch(err => console.error("Notification reminder error:", err));
       });
 
     } catch (err) {

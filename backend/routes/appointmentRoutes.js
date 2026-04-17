@@ -11,4 +11,8 @@ router.post("/", authMiddleware, appointmentController.createAppointment);
 
 router.get("/", authMiddleware, appointmentController.getAppointments);
 
+/* DELETE APPOINTMENT */
+
+router.delete("/:id", authMiddleware, appointmentController.deleteAppointment);
+
 module.exports = router;

@@ -11,4 +11,7 @@ router.post(
  authorizeRoles("owner"),
  userController.createUser
 );
+
+router.get("/", authMiddleware, userController.getUsers);
+
 module.exports = router;
